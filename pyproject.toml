@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "server"
+version = "0.1.0"
+description = ""
+authors = ["anandukch <anandukch@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["all"], version = "^0.95.2"}
+pymongo = "^4.3.3"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+beanie = "^1.19.0"
+
+
+
+[tool.poetry.group.dev.dependencies]
+black = {version = "^23.3.0", allow-prereleases = true}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
