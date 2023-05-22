@@ -2,6 +2,7 @@ from jose import jwt
 from fastapi import Depends, HTTPException, status
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer
+
 oauth_schema = OAuth2PasswordBearer(tokenUrl="auth/login")
 # from app.settings import ALGORITHM, SECRET_KEY
 ALGORITHM = "HS256"
@@ -19,7 +20,6 @@ def create_access_token(data: dict):
 def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KET, algorithms=[ALGORITHM])
-        # print(payload)
         return payload
     except jwt.JWTError:
         raise HTTPException(
@@ -48,7 +48,6 @@ def verify_token(token: str):
 
 
 def get_current_user(token: str = Depends(oauth_schema)):
-    # print(token)
     payload = verify_token(token)
-    # print(payload)
+
     return payload

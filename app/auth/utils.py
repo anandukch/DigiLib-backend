@@ -1,6 +1,8 @@
 from functools import wraps
 
-# def decorator(a,b):   
+from fastapi import HTTPException
+
+# def decorator(a,b):
 #     print(a)
 #     def inner(func):
 #         print('inner')
@@ -9,11 +11,12 @@ from functools import wraps
 #             return func(*args,**kwargs)
 #         return wrapper
 #     return inner
-  
+
 # @decorator('a',2)
 # def hello(a):
 #     print("hello")
 # hello('admin')
+
 
 def role_decorator(role: list):
     """_summary_
@@ -21,14 +24,18 @@ def role_decorator(role: list):
     Args:
         role (list): _description_
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            current_user=kwargs['current_user']
-            if current_user['role'] in role:
+            current_user = kwargs["current_user"]
+            if current_user["role"] in role:
                 return func(*args, **kwargs)
             else:
-                return {"msg": "You don't have permission to access this resource."}
+                return HTTPException(
+                    status_code=403,
+                    detail="You don't have permission to access this resource",
+                )
 
         return wrapper
 
@@ -39,6 +46,7 @@ from datetime import timedelta, datetime
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
+
 # from app.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, BASE_PATH, SECRET_KEY
 
 
