@@ -25,12 +25,12 @@ async def root() -> dict:
     """
     Root GET
     """
-    new_user=Student(email="test@gmail.com",password="test",name="name",year_of_passing=2023,branch="cse",roll_no="12")
-    try:
-        await Student.insert_one(new_user)
-    except Exception as e:
-        return e
-    return {"msg": new_user}
+    # new_user=Student(email="test@gmail.com",password="test",name="name",year_of_passing=2023,branch="cse",roll_no="12")
+    # try:
+    #     await Student.insert_one(new_user)
+    # except Exception as e:
+    #     return e
+    return {"msg": "new_user"}
 
 
 app.include_router(auth_router, prefix="/auth")
