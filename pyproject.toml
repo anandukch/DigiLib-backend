@@ -12,9 +12,7 @@ pymongo = "^4.3.3"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 beanie = "^1.19.0"
 
-
-
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.dev-dependencies]
 black = {version = "^23.3.0", allow-prereleases = true}
 
 [build-system]
