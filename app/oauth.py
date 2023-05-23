@@ -17,7 +17,7 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-def verify_token(token: str):
+def verify_token(token):
     try:
         payload = jwt.decode(token, SECRET_KET, algorithms=[ALGORITHM])
         return payload
@@ -49,5 +49,4 @@ def verify_token(token: str):
 
 def get_current_user(token: str = Depends(oauth_schema)):
     payload = verify_token(token)
-
     return payload

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Request, Response
 from app.auth.endpoint import auth_router
-from app.db import init_db
-from app.models.user import Student, User
+# from app.db import init_db
+import app.db
 
 app = FastAPI(title="Recipe API", openapi_url="/openapi.json")
 
@@ -14,8 +14,7 @@ async def startup_event():
     Startup event
     """
     try:
-        await init_db()
-        print("database connected")
+        print("Connecting to database")
     except Exception as e:
         print(e)
 
