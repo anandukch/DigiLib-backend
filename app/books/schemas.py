@@ -1,6 +1,6 @@
 from ast import Str
 from datetime import date
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
 
 
@@ -23,12 +23,12 @@ class AuthorDB(Author):
 
 
 class Book(BaseModel):
-    ISBN: str
-    title: str
-    language: str
-    subject: str
-    publisher: str
-    author: str
+    ISBN: str = Field(..., alias="ISBN")
+    title: str = Field(..., alias="title")
+    language: str = Field(..., alias="language")
+    subject: str = Field(..., alias="subject")
+    publisher: str = Field(..., alias="publisher")
+    author: str = Field(..., alias="author")
 
     class Config:
         orm_mode = True

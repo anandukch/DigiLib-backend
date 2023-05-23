@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 import app.books.crud as crud
 from app.books.schemas import Author, Book
 
 book_router = APIRouter()
+
 
 @book_router.get("/authors")
 def get_authors():
@@ -11,8 +12,8 @@ def get_authors():
     except Exception as e:
         print(e)
         return {"error": "Error getting authors"}
-    
-    
+
+
 @book_router.get("/")
 def get_all_books():
     try:
@@ -23,9 +24,9 @@ def get_all_books():
 
 
 @book_router.get("/{book_id}")
-def get_book(book_id: int):
+def get_book(book_id: str):
     try:
-        crud.get(book_id)
+        return crud.get_book(book_id)
     except Exception as e:
         print(e)
         return {"error": "Error getting book"}
@@ -34,13 +35,15 @@ def get_book(book_id: int):
 @book_router.post("/")
 def add_book(book: Book):
     try:
-        return crud.add_book(book)
+        author = crud.get_author(book.author)
+        return crud.add_book(book.dict())
     except Exception as e:
         print(e)
-        return {"error": "Error adding book"}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding book"
+        )
 
 
-# add author
 @book_router.post("/authors")
 def add_author(author: Author):
     try:
@@ -48,4 +51,6 @@ def add_author(author: Author):
     except Exception as e:
         print(e)
         return {"error": "Error adding author"}
+    
+    
 
