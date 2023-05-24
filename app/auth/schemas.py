@@ -7,9 +7,6 @@ from app.users.schemas import UserBaseSchema
 
 
 class CreateUserSchema(UserBaseSchema):
-    adm_no:Optional[str]
-    semester:Optional[int]
-    branch:Optional[str]
     password: constr(min_length=8)
     passwordConfirm: str
     verified: bool = False

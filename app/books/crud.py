@@ -2,7 +2,8 @@ from typing import List
 
 from bson import ObjectId
 from app.books.schemas import Author, AuthorDB, Book
-from app.db import Authors, Books
+from app.common import BookStatus
+from app.db import Authors, BookItems, Books, Utils
 from app.exception_handler import exception_handler
 from app.serializers.books import (
     authorListResponseEntity,
@@ -19,19 +20,35 @@ def get_books():
     return bookListResponseEntity(list(Books.find({})))
 
 
-def get_book(book_id: str):
+def get_book(book_id: str) -> Book:
     """
     Get a book by id
     """
     return bookResposneEntity(Books.find_one({"_id": ObjectId(book_id)}))
 
 
-def add_book(book: dict):
+def add_book(book: dict) -> Book:
     """
     Add a book
     """
     new_book = Books.insert_one(book)
-    return bookResposneEntity(Books.find_one({"_id": new_book.inserted_id}))
+    acc_no = 1000
+    if not Utils.find_one({"name": "acc_no"}):
+        Utils.insert_one({"name": "acc_no", "value": acc_no})
+    else:
+        acc_no = Utils.find_one({"name": "acc_no"})["value"]
+    for i in range(book["no_of_copies"]):
+        BookItems.insert_one(
+            {
+                "book_id": new_book.inserted_id,
+                "acc_no": acc_no + 1,
+                "status": BookStatus.AVAILABLE,
+            }
+        )
+        acc_no += 1
+        Utils.update_one({"name": "acc_no"}, {"$set": {"value": acc_no}})
+
+    return get_book(new_book.inserted_id)
 
 
 def add_author(author: Author) -> Author:
@@ -39,7 +56,7 @@ def add_author(author: Author) -> Author:
     Add an author
     """
     new_author = Authors.insert_one(author.dict())
-    return authorResposneEntity(Authors.find_one({"_id": new_author.inserted_id}))
+    return get_author(new_author.inserted_id)
 
 
 def get_author(author_id: str):

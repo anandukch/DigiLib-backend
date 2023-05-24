@@ -9,15 +9,15 @@ app = FastAPI(title="Recipe API", openapi_url="/openapi.json")
 api_router = APIRouter()
 
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Startup event
-    """
-    try:
-        print("Connecting to database")
-    except Exception as e:
-        print(e)
+# @app.on_event("startup")
+# async def startup_event():
+#     """
+#     Startup event
+#     """
+#     try:
+#         print("Connecting to database")
+#     except Exception as e:
+#         print(e)
 
 
 @api_router.get("/", status_code=200)

@@ -1,5 +1,5 @@
 from ast import Str
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
 
@@ -31,6 +31,7 @@ class Book(BaseModel):
     subject: str = Field(..., alias="subject")
     publisher: str = Field(..., alias="publisher")
     author: str = Field(..., alias="author")
+    no_of_copies: int = Field(..., alias="no_of_copies")
 
     class Config:
         orm_mode = True
@@ -49,10 +50,11 @@ class Book(BaseModel):
 
 
 class BookItem(BaseModel):
+    acc_no:int
     book_id: str
     status: BookStatusEnum
-    date_of_purchase: date
-    date_of_issue: date
+    date_of_purchase: date | None = None
+    date_of_issue: date | None = None
 
     class Config:
         orm_mode = True
@@ -61,18 +63,18 @@ class BookItem(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-class BookRequest(BaseModel):
-    book_id: ObjectId
-    user_id: ObjectId
-    status: str
-    date_of_request: date
-    date_of_issue: date
+# class BookRequest(BaseModel):
+#     book_id: ObjectId
+#     user_id: ObjectId
+#     status: str
+#     date_of_request: date
+#     date_of_issue: date
 
-    class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+#     class Config:
+#         orm_mode = True
+#         allow_population_by_field_name = True
+#         arbitrary_types_allowed = True
+#         json_encoders = {ObjectId: str}
 
 
 class BookReturn(BaseModel):

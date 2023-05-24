@@ -6,6 +6,7 @@ def bookResposneEntity(book):
         "subject": book["subject"],
         "publisher": book["publisher"],
         "author": book["author"],
+        "no_of_copies": book["no_of_copies"],
     }
 
 
@@ -19,6 +20,7 @@ def authorResposneEntity(author):
 
 def authorListResponseEntity(authors):
     return [authorResposneEntity(author) for author in authors]
+
 
 def bookListResponseEntity(books):
     return [bookResposneEntity(book) for book in books]

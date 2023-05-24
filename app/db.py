@@ -19,8 +19,7 @@ from app.books.schemas import Author
 from app.settings import settings
 
 
-client = mongo_client.MongoClient(
-    settings.MONGO_URL, serverSelectionTimeoutMS=5000)
+client = mongo_client.MongoClient(settings.MONGO_URL, serverSelectionTimeoutMS=5000)
 
 try:
     conn = client.server_info()
@@ -33,7 +32,8 @@ User = db.users
 Books = db.books
 Authors = db.authors
 BookItems = db.book_items
-BookRequests = db.book_requests
-BookTransactions = db.book_transactions
+Utils = db.utils
+# BookRequests = db.book_requests
+# BookTransactions = db.book_transactions
 
 User.create_index([("email", pymongo.ASCENDING)], unique=True)
