@@ -10,6 +10,7 @@ def exception_handler(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
+            print(e)
             if type(e) == HTTPException:
                 raise e
             else:

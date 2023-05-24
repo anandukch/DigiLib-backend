@@ -3,6 +3,8 @@ from datetime import date
 from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
 
+from app.common import BookStatusEnum
+
 
 class Author(BaseModel):
     name: str
@@ -47,8 +49,8 @@ class Book(BaseModel):
 
 
 class BookItem(BaseModel):
-    book_id: ObjectId
-    status: str
+    book_id: str
+    status: BookStatusEnum
     date_of_purchase: date
     date_of_issue: date
 

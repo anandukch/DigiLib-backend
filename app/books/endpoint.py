@@ -13,7 +13,17 @@ def get_authors():
         print(e)
         return {"error": "Error getting authors"}
 
-
+@book_router.post("/authors")
+def add_author(author: Author):
+    try:
+        return crud.add_author(author)
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding author"
+        )
+        
+        
 @book_router.get("/")
 def get_all_books():
     try:
@@ -35,22 +45,24 @@ def get_book(book_id: str):
 @book_router.post("/")
 def add_book(book: Book):
     try:
-        author = crud.get_author(book.author)
+        # author = crud.get_author(book.author)
         return crud.add_book(book.dict())
     except Exception as e:
         print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding book"
         )
-
-
-@book_router.post("/authors")
-def add_author(author: Author):
+        
+        
+@book_router.post("/reserve/{book_id}")
+def reserve_book(book_id: str):
     try:
-        return crud.add_author(author)
+        return crud.reserve_book(book_id)
     except Exception as e:
         print(e)
-        return {"error": "Error adding author"}
-    
-    
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error reserving book"
+        )
+
+
 

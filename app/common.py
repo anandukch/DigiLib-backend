@@ -8,10 +8,24 @@ class UserRoleEnum(str, Enum):
     STAFF = "staff"
 
 
+class BookStatusEnum(str, Enum):
+    AVAILABLE = "available"
+    RESERVED = "reserved"
+    ISSUED = "issued"
+    LOST = "lost"
+    DAMAGED = "damaged"
+
+
+class BookStatus:
+    AVAILABLE = "available"
+    RESERVED = "reserved"
+    ISSUED = "issued"
+    LOST = "lost"
+    DAMAGED = "damaged"
+
+
 class UserRoles:
     STUDENT = "student"
     ADMIN = "admin"
     ISSUER = "issuer"
     STAFF = "staff"
-    
-user_roles = UserRoles()
