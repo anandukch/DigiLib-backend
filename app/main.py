@@ -1,8 +1,7 @@
 from fastapi import FastAPI, APIRouter, Request, Response
 from app.auth.endpoint import auth_router
 from app.books.endpoint import book_router
-
-# from app.db import init_db
+from fastapi.middleware.cors import CORSMiddleware
 import app.db
 
 app = FastAPI(title="Recipe API", openapi_url="/openapi.json")
@@ -41,6 +40,19 @@ async def seed():
         return {"message": "Database seeded"}
     except Exception as e:
         print(e)
+
+origins = [
+    "http://localhost:3000",
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(auth_router, prefix="/auth")
