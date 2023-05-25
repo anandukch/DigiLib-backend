@@ -44,6 +44,7 @@ class Book(BaseModel):
 class BookDB(Book):
     _id: str
     available_copies: int
+    virtual_copies: int
 
     class Config:
         orm_mode = True

@@ -60,7 +60,7 @@ def register(payload: CreateUserSchema):
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors()
-            )
+            ) 
     payload.password = hash_password(payload.password)
     del payload.passwordConfirm
     payload.verified = True

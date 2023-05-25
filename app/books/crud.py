@@ -33,6 +33,7 @@ def add_book(book: dict):
     Add a book
     """
     book["available_copies"] = book["no_of_copies"]
+    book["virtual_copies"] = book["no_of_copies"]
     new_book = Books.insert_one(book)
     acc_no = 1000
     if not Utils.find_one({"name": "acc_no"}):
@@ -74,19 +75,21 @@ def reserve_book(book_id: str, user: dict):
     Reserve a book
     """
     book = get_book(book_id)
-    if book["available_copies"] == 0:
+    if book["virtual_copies"] == 0:
         book_queue = BookQueue.find_one({"book_id": ObjectId(book_id)})
         if not book_queue:
             book_queue = BookQueue.insert_one(
                 {"book_id": ObjectId(book_id), "queue": []}
             )
+        if user["id"] in book_queue["queue"]:
+            return {"message": "Book already in queue", "data": book}
         BookQueue.update_one(
             {"_id": ObjectId(book_queue["_id"])},
-            {"$push": {"queue": ObjectId("5f9b3b3b9d9b7b3a3f9b3b3b")}},
+            {"$push": {"queue": user["id"]}},
         )
         bookTransaction = BookTransaction(
             book_id=ObjectId(book_id),
-            user_id=ObjectId("5f9b3b3b9d9b7b3a3f9b3b3b"),
+            user_id=ObjectId(user["id"]),
             status=BookTransactionStatus.IN_QUEUE,
             date_of_reservation=datetime.utcnow(),
         )
@@ -102,17 +105,17 @@ def reserve_book(book_id: str, user: dict):
         )
         Books.update_one(
             {"_id": ObjectId(book_id)},
-            {"$set": {"available_copies": book["available_copies"] - 1}},
+            {"$set": {"virtual_copies": book["virtual_copies"] - 1}},
         )
         bookTransaction = BookTransaction(
             book_id=ObjectId(book_id),
-            user_id=ObjectId("5f9b3b3b9d9b7b3a3f9b3b3b"),
+            user_id=ObjectId(user["id"]),
             status=BookStatus.RESERVED,
             date_of_reservation=datetime.utcnow(),
             book_item_id=ObjectId(book_item["_id"]),
         )
         BookTransactions.insert_one(bookTransaction.dict())
-        book["available_copies"] = book["available_copies"] - 1
+        book["virtual_copies"] = book["virtual_copies"] - 1
         return book
 
 

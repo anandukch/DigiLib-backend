@@ -31,7 +31,7 @@ def role_decorator(role: list):
             if current_user["role"] in role:
                 return func(*args, **kwargs)
             else:
-                return HTTPException(
+                raise HTTPException(
                     status_code=403,
                     detail="You don't have permission to access this resource",
                 )

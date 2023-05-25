@@ -48,7 +48,8 @@ def get_book(book_id: str):
 
 
 @book_router.post("/")
-def add_book(book: Book):
+@role_decorator(role=[UserRoles.ADMIN])
+def add_book(book: Book,user=Depends(get_current_user)):
     try:
         # author = crud.get_author(book.author)
         return crud.add_book(book.dict())
@@ -62,7 +63,6 @@ def add_book(book: Book):
 @role_decorator(role=[UserRoles.STUDENT])
 def reserve_book(book_id: str, user: str = Depends(get_current_user)):
     # try:
-    print(user)
     return crud.reserve_book(book_id,user)
 
 
