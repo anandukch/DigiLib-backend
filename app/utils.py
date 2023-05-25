@@ -24,11 +24,10 @@ def role_decorator(role: list):
     Args:
         role (list): _description_
     """
-
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            current_user = kwargs["current_user"]
+            current_user = kwargs["user"]
             if current_user["role"] in role:
                 return func(*args, **kwargs)
             else:

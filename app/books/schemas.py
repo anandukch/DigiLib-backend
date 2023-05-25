@@ -1,9 +1,10 @@
 from ast import Str
 from datetime import date, datetime
+from typing import Any, List
 from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
 
-from app.common import BookStatusEnum
+from app.common import BookStatusEnum, BookTransactionStatus, BookTransactionStatusEnum
 
 
 class Author(BaseModel):
@@ -40,18 +41,20 @@ class Book(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-# class CreateBook(BaseModel):
-#     ISBN: str
-#     title: str
-#     language: str
-#     subject: str
-#     publisher: str
-#     author: str
+class BookDB(Book):
+    _id: str
+    available_copies: int
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
 
 
 class BookItem(BaseModel):
-    acc_no:int
-    book_id: str
+    acc_no: int
+    book_id: ObjectId
     status: BookStatusEnum
     date_of_purchase: date | None = None
     date_of_issue: date | None = None
@@ -63,12 +66,11 @@ class BookItem(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-# class BookRequest(BaseModel):
+# class BookReturn(BaseModel):
 #     book_id: ObjectId
 #     user_id: ObjectId
 #     status: str
-#     date_of_request: date
-#     date_of_issue: date
+#     date_of_return: date
 
 #     class Config:
 #         orm_mode = True
@@ -77,11 +79,17 @@ class BookItem(BaseModel):
 #         json_encoders = {ObjectId: str}
 
 
-class BookReturn(BaseModel):
+class BookTransaction(BaseModel):
     book_id: ObjectId
+    book_item_id: ObjectId | None = None
     user_id: ObjectId
-    status: str
-    date_of_return: date
+    status: BookTransactionStatusEnum = BookTransactionStatus.RESERVED
+    date_of_reservation: datetime | None = None
+    date_of_issue: datetime | None = None
+    date_of_return: datetime | None = None
+    actual_date_of_return: datetime | None = None
+    fine: int | None = None
+    issued_by: ObjectId | None = None
 
     class Config:
         orm_mode = True
@@ -90,12 +98,9 @@ class BookReturn(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-class BookTransaction(BaseModel):
+class BookQueue(BaseModel):
     book_id: ObjectId
-    user_id: ObjectId
-    status: str
-    date_of_issue: date
-    date_of_return: date
+    queue: list
 
     class Config:
         orm_mode = True

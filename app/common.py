@@ -16,6 +16,24 @@ class BookStatusEnum(str, Enum):
     DAMAGED = "damaged"
 
 
+class BookTransactionStatusEnum(str, Enum):
+    IN_QUEUE = "in_queue"
+    RESERVED = "reserved"
+    ISSUED = "issued"
+    RETURNED = "returned"
+    FINE_DUE = "fine_due"
+    LOST = "lost"
+
+
+class BookTransactionStatus:
+    IN_QUEUE = "in_queue"
+    RESERVED = "reserved"
+    ISSUED = "issued"
+    RETURNED = "returned"
+    FINE_DUE = "fine_due"
+    LOST = "lost"
+
+
 class BookStatus:
     AVAILABLE = "available"
     RESERVED = "reserved"

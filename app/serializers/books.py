@@ -7,6 +7,7 @@ def bookResposneEntity(book):
         "publisher": book["publisher"],
         "author": book["author"],
         "no_of_copies": book["no_of_copies"],
+        "available_copies": book["available_copies"],
     }
 
 
