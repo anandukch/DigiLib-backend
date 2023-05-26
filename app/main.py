@@ -1,6 +1,7 @@
-from fastapi import FastAPI, APIRouter, Request, Response
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, status
 from app.auth.endpoint import auth_router
 from app.books.endpoint import book_router
+from app.users.endpoints import user_router
 from fastapi.middleware.cors import CORSMiddleware
 import app.db
 
@@ -28,6 +29,7 @@ async def root() -> dict:
 
     return {"message": "Hello World"}
 
+
 @api_router.delete("/delete")
 async def seed():
     """
@@ -39,12 +41,12 @@ async def seed():
         app.db.Author.delete_many({})
         return {"message": "Database seeded"}
     except Exception as e:
-        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error seeding database"
+        )
 
-origins = [
-    "http://localhost:3000",
-    "*"
-]
+
+origins = ["http://localhost:3000", "*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,7 +59,8 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/auth")
 app.include_router(book_router, prefix="/books")
-app.include_router(api_router,prefix='/api')
+app.include_router(api_router, prefix="/api")
+app.include_router(user_router, prefix="/users")
 
 
 if __name__ == "__main__":

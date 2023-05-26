@@ -1,5 +1,7 @@
 from enum import Enum
 
+from bson import ObjectId
+
 
 class UserRoleEnum(str, Enum):
     STUDENT = "student"
@@ -47,3 +49,23 @@ class UserRoles:
     ADMIN = "admin"
     ISSUER = "issuer"
     STAFF = "staff"
+
+
+class BaseCrud:
+    def __init__(self, db):
+        self.db = db
+
+    def get_all(self):
+        return self.db.find({})
+
+    def get(self, id: str):
+        return self.db.find_one({"_id": ObjectId(id)})
+
+    def create(self, data: dict):
+        return self.db.insert_one(data)
+
+    def update(self, id: str, data: dict):
+        return self.db.update_one({"_id": ObjectId(id)}, {"$set": data})
+
+    def delete(self, id: str):
+        return self.db.delete_one({"_id": ObjectId(id)})
