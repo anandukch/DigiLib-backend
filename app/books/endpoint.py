@@ -49,7 +49,7 @@ def get_book(book_id: str):
 
 @book_router.post("/")
 @role_decorator(role=[UserRoles.ADMIN])
-def add_book(book: Book,user=Depends(get_current_user)):
+def add_book(book: Book, user=Depends(get_current_user)):
     try:
         # author = crud.get_author(book.author)
         return crud.add_book(book.dict())
@@ -63,7 +63,7 @@ def add_book(book: Book,user=Depends(get_current_user)):
 @role_decorator(role=[UserRoles.STUDENT])
 def reserve_book(book_id: str, user: str = Depends(get_current_user)):
     # try:
-    return crud.reserve_book(book_id,user)
+    return crud.reserve_book(book_id, user)
 
 
 # except Exception as e:
@@ -96,4 +96,16 @@ def return_book(book_item_id: str):
         )
 
 
-# @book_router.post("/transaction")
+@book_router.get("/transaction/{book_id}/")
+def get_book_transactions(
+    book_id: str, type: str = None, user=Depends(get_current_user)
+):
+    try:
+        return crud.get_book_transactions(book_id, type)
+    except Exception as e:
+        if type(e) == HTTPException:
+            raise e
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error getting book transactions",
+        )

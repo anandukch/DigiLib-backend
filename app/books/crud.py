@@ -1,11 +1,14 @@
 from datetime import datetime
+from email.policy import HTTP
 from typing import List
 
 from bson import ObjectId
+from fastapi import HTTPException
 from app.books.schemas import Author, AuthorDB, Book, BookDB, BookItem, BookTransaction
 from app.common import BookStatus, BookTransactionStatus
 from app.db import Authors, BookItems, BookQueue, BookTransactions, Books, Utils
 from app.exception_handler import exception_handler
+from app.serializers.book_trans import bookTransEntity, bookTransListEntity
 from app.serializers.books import (
     authorListResponseEntity,
     authorResposneEntity,
@@ -74,6 +77,35 @@ def reserve_book(book_id: str, user: dict):
     """
     Reserve a book
     """
+    book_trans = bookTransEntity(
+        BookTransactions.find_one(
+            {"book_id": ObjectId(book_id), "user_id": ObjectId(user["id"])}
+        )
+    )
+
+    if book_trans:
+        print(book_trans)
+        if book_trans["status"] == BookTransactionStatus.RESERVED:
+            raise HTTPException(
+                status_code=400,
+                detail="Book already reserved",
+            )
+        elif book_trans["status"] == BookTransactionStatus.ISSUED:
+            raise HTTPException(
+                status_code=400,
+                detail="Book already issued",
+            )
+        elif book_trans["status"] == BookTransactionStatus.IN_QUEUE:
+            raise HTTPException(
+                status_code=400,
+                detail="Book already in queue",
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Book already returned",
+            )
+
     book = get_book(book_id)
     if book["virtual_copies"] == 0:
         book_queue = BookQueue.find_one({"book_id": ObjectId(book_id)})
@@ -94,7 +126,7 @@ def reserve_book(book_id: str, user: dict):
             date_of_reservation=datetime.utcnow(),
         )
         BookTransactions.insert_one(bookTransaction.dict())
-        return {"message": "Book not available resered", "data": book}
+        return book
     else:
         book_item = BookItems.find_one(
             {"book_id": ObjectId(book_id), "status": BookStatus.AVAILABLE}
@@ -169,3 +201,22 @@ def issue_book(book_trans_id: str):
         "book_item": book_item,
         "book_transaction": book_transaction,
     }
+
+
+def get_reserved_books():
+    """
+    Get reserved books
+    """
+    return list(BookTransactions.find({"status": BookStatus.RESERVED}))
+
+
+def get_book_transactions(bookId: str, type: str):
+    """
+    Get book transactions
+    """
+    params = {"book_id": ObjectId(bookId)}
+    if type == "issued":
+        params["status"] = BookStatus.ISSUED
+    elif type == "returned":
+        params["status"] = BookStatus.RETURNED
+    return bookTransListEntity(list(BookTransactions.find(params)))

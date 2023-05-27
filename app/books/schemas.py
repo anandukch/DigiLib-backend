@@ -67,19 +67,6 @@ class BookItem(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-# class BookReturn(BaseModel):
-#     book_id: ObjectId
-#     user_id: ObjectId
-#     status: str
-#     date_of_return: date
-
-#     class Config:
-#         orm_mode = True
-#         allow_population_by_field_name = True
-#         arbitrary_types_allowed = True
-#         json_encoders = {ObjectId: str}
-
-
 class BookTransaction(BaseModel):
     book_id: ObjectId
     book_item_id: ObjectId | None = None
