@@ -5,7 +5,7 @@ from typing import List
 from bson import ObjectId
 from fastapi import HTTPException
 from app.books.schemas import Author, AuthorDB, Book, BookDB, BookItem, BookTransaction
-from app.common import BookStatus, BookTransactionStatus
+from app.common import BaseCrud, BookStatus, BookTransactionStatus
 from app.db import Authors, BookItems, BookQueue, BookTransactions, Books, Utils
 from app.exception_handler import exception_handler
 from app.serializers.book_trans import bookTransEntity, bookTransListEntity
@@ -15,6 +15,7 @@ from app.serializers.books import (
     bookListResponseEntity,
     bookResposneEntity,
 )
+
 
 
 def get_books():
@@ -220,3 +221,45 @@ def get_book_transactions(bookId: str, type: str):
     elif type == "returned":
         params["status"] = BookStatus.RETURNED
     return bookTransListEntity(list(BookTransactions.find(params)))
+
+
+def get_book_trans(book_trans_id: str):
+    return bookTransEntity(BookTransactions.find_one({"_id": ObjectId(book_trans_id)}))
+
+
+def return_book(book_trans_id: str):
+    book_trans = get_book_trans(book_trans_id)
+    if not book_trans:
+        raise HTTPException(
+            status_code=400,
+            detail="Book transaction not found",
+        )
+    book_item = BookItems.find_one({"_id": ObjectId(book_trans["book_item_id"])})
+    if not book_item:
+        raise HTTPException(
+            status_code=400,
+            detail="Book item not found",
+        )
+    BookItems.update_one(
+        {"_id": ObjectId(book_item["_id"])}, {"$set": {"status": BookStatus.RETURNED}}
+    )
+
+    Books.update_one(
+        {"_id": ObjectId(book_item["book_id"])},
+        {"$inc": {"available_copies": 1, "virtual_copies": 1}},
+    )
+
+    BookTransactions.update_one(
+        {"_id": ObjectId(book_trans_id)},
+        {
+            "$set": {
+                "status": BookTransactionStatus.RETURNED,
+                "date_of_return": datetime.utcnow(),
+            }
+        },
+    )
+    
+    return {
+        "book": get_book(book_item["book_id"]),
+        "book_item": book_item,   
+    }

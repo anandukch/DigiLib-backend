@@ -86,9 +86,9 @@ def issue_book(book_item_id: str):
 
 @book_router.post("/return/{book_item_id}")
 @role_decorator(role=[UserRoles.STUDENT])
-def return_book(book_item_id: str):
+def return_book(book_trans_id: str):
     try:
-        return crud.return_book(book_item_id)
+        return crud.return_book(book_trans_id)
     except Exception as e:
         print(e)
         raise HTTPException(

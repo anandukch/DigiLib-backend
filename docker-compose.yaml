@@ -1,0 +1,19 @@
+version: "3.1"
+
+services:
+  server:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: digilib-server
+    image: digilib-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - /app/.venv
+    restart: "unless-stopped"
+
+volumes:
+  data:
+    driver: local
