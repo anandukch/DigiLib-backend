@@ -17,7 +17,6 @@ from app.serializers.books import (
 )
 
 
-
 def get_books():
     """
     Get all books
