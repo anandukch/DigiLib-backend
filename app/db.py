@@ -25,5 +25,6 @@ Utils = db.utils
 BookQueue = db.book_queue
 BookRequests = db.book_requests
 BookTransactions = db.book_transactions
+Projects = db.projects
 
 User.create_index([("email", pymongo.ASCENDING)], unique=True)

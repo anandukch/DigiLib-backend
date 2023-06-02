@@ -1,5 +1,15 @@
+import json
 from logging import Logger
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    status,
+)
 import app.books.crud as crud
 from app.books.schemas import Author, Book
 from app.common import UserRoles
@@ -51,7 +61,6 @@ def get_book(book_id: str):
 @role_decorator(role=[UserRoles.ADMIN])
 def add_book(book: Book, user=Depends(get_current_user)):
     try:
-        # author = crud.get_author(book.author)
         return crud.add_book(book.dict())
     except Exception as e:
         raise HTTPException(
@@ -62,16 +71,7 @@ def add_book(book: Book, user=Depends(get_current_user)):
 @book_router.post("/reserve/{book_id}")
 @role_decorator(role=[UserRoles.STUDENT])
 def reserve_book(book_id: str, user: str = Depends(get_current_user)):
-    # try:
     return crud.reserve_book(book_id, user)
-
-
-# except Exception as e:
-#     print(e)
-#     raise HTTPException(
-#         status_code=status.HTTP_400_BAD_REQUEST, detail="Error reserving book"
-#     )
-
 
 @book_router.post("/issue/{book_item_id}")
 def issue_book(book_item_id: str):
@@ -109,3 +109,15 @@ def get_book_transactions(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error getting book transactions",
         )
+        
+
+@book_router.post("/upload")
+def upload_books(file: UploadFile = File(...)):
+    try:
+        return crud.upload_file(file)
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error uploading books"
+        )
+        

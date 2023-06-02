@@ -3,7 +3,8 @@ from email.policy import HTTP
 from typing import List
 
 from bson import ObjectId
-from fastapi import HTTPException
+from click import File
+from fastapi import HTTPException, UploadFile
 from app.books.schemas import Author, AuthorDB, Book, BookDB, BookItem, BookTransaction
 from app.common import BaseCrud, BookStatus, BookTransactionStatus
 from app.db import Authors, BookItems, BookQueue, BookTransactions, Books, Utils
@@ -29,6 +30,11 @@ def get_book(book_id: str) -> Book:
     Get a book by id
     """
     return bookResposneEntity(Books.find_one({"_id": ObjectId(book_id)}))
+
+def upload_file(file: UploadFile = File(...)):
+    print(file.filename)
+    return {"filename": file.filename}
+
 
 
 def add_book(book: dict):

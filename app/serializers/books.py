@@ -1,6 +1,7 @@
 def bookResposneEntity(book):
     return {
         "id": str(book["_id"]),
+        "ISBN": book["ISBN"],  # noqa: E501
         "title": book["title"],
         "language": book["language"],
         "subject": book["subject"],
