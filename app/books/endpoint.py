@@ -96,6 +96,16 @@ def return_book(book_trans_id: str):
         )
 
 
+@book_router.get("/transactions")
+def get_all():
+    try:
+        return crud.get_all_book_transactions()
+    except Exception as e:
+        raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Error"
+                )
+
 @book_router.get("/transaction/{book_id}/")
 def get_book_transactions(
     book_id: str, type: str = None, user=Depends(get_current_user)

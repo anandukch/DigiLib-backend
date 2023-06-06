@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, status
 from app.auth.endpoint import auth_router
-frot app.books.endpoint import book_router
+from app.books.endpoint import book_router
 from app.users.endpoints import user_router
 from fastapi.middleware.cors import CORSMiddleware
 import app.db
@@ -8,7 +8,6 @@ import app.db
 app = FastAPI(title="Recipe API", openapi_url="/openapi.json")
 
 api_router = APIRouter()
-(
 # @app.on_event("startup")
 # async def startup_event():
 #     """

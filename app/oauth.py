@@ -26,7 +26,6 @@ def verify_token(token):
         payload = jwt.decode(token, SECRET_KET, algorithms=[ALGORITHM])
         return payload
     except Exception as e:
-        print(e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",

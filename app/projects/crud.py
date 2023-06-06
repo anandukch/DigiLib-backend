@@ -1,6 +1,3 @@
-
-
-
 from app.common import BaseCrud
 from app.db import Projects
 

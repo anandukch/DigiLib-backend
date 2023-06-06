@@ -268,3 +268,8 @@ def return_book(book_trans_id: str):
         "book": get_book(book_item["book_id"]),
         "book_item": book_item,   
     }
+
+
+def get_all_book_transactions():
+    bookTransListEntity(BookTransactions.find({}));
+
