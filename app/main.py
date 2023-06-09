@@ -24,7 +24,6 @@ async def root() -> dict:
     """
     Root GET
     """
-
     return {"message": "Hello World"}
 
 
