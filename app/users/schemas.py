@@ -10,7 +10,8 @@ class UserBaseSchema(BaseModel):
     email: str
     adm_no:Optional[str]
     semester:Optional[int]
-    branch:Optional[str]
+    department:Optional[str]
+    designation:Optional[str]
     role: UserRoleEnum = UserRoles.STUDENT
     created_at: datetime | None = None
     updated_at: datetime | None = None

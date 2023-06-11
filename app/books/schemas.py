@@ -1,6 +1,8 @@
 from ast import Str
 from datetime import date, datetime
 from typing import Any, List
+from click import File
+from fastapi import UploadFile
 from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
 
@@ -33,6 +35,7 @@ class Book(BaseModel):
     publisher: str = Field(..., alias="publisher")
     author: str = Field(..., alias="author")
     no_of_copies: int = Field(..., alias="no_of_copies")
+    image: str = Field(..., alias="image")
 
     class Config:
         orm_mode = True

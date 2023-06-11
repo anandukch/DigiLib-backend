@@ -10,6 +10,7 @@ def bookResposneEntity(book):
         "no_of_copies": book["no_of_copies"],
         "available_copies": book["available_copies"],
         "virtual_copies": book["virtual_copies"],
+        "image": book["image"],
     }
 
 
@@ -27,3 +28,12 @@ def authorListResponseEntity(authors):
 
 def bookListResponseEntity(books):
     return [bookResposneEntity(book) for book in books]
+
+
+def bookItemEntity(bookItem):
+    return {
+        "id": str(bookItem["_id"]),
+        "acc_no": bookItem["acc_no"],
+        "book_id": str(bookItem["book_id"]),
+        "status": bookItem["status"],
+    }

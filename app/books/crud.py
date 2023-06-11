@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.policy import HTTP
 from typing import List
 
@@ -31,10 +31,10 @@ def get_book(book_id: str) -> Book:
     """
     return bookResposneEntity(Books.find_one({"_id": ObjectId(book_id)}))
 
+
 def upload_file(file: UploadFile = File(...)):
     print(file.filename)
     return {"filename": file.filename}
-
 
 
 def add_book(book: dict):
@@ -83,14 +83,11 @@ def reserve_book(book_id: str, user: dict):
     """
     Reserve a book
     """
-    book_trans = bookTransEntity(
-        BookTransactions.find_one(
-            {"book_id": ObjectId(book_id), "user_id": ObjectId(user["id"])}
-        )
+    book_trans = BookTransactions.find_one(
+        {"book_id": ObjectId(book_id), "user_id": ObjectId(user["id"])}
     )
 
     if book_trans:
-        print(book_trans)
         if book_trans["status"] == BookTransactionStatus.RESERVED:
             raise HTTPException(
                 status_code=400,
@@ -154,7 +151,15 @@ def reserve_book(book_id: str, user: dict):
         )
         BookTransactions.insert_one(bookTransaction.dict())
         book["virtual_copies"] = book["virtual_copies"] - 1
-        return book
+        book_item["status"] = BookStatus.RESERVED
+        return {
+            "message": "Book reserved",
+            # "data": {
+            #     "book": book,
+            #     "book_transaction": bookTransaction,
+            #     "book_item": book_item,
+            # }
+        }
 
 
 def get_book_queue(book_id: str):
@@ -171,14 +176,29 @@ def get_book_queue(book_id: str):
 def issue_book(book_trans_id: str):
     book_transaction = BookTransactions.find_one({"_id": ObjectId(book_trans_id)})
     if not book_transaction:
-        return {"message": "Book transaction not found"}
+        raise HTTPException(
+            status_code=400,
+            detail="Book transaction not found",
+        )
     if book_transaction["status"] == BookTransactionStatus.ISSUED:
         return {"message": "Book already issued"}
     if book_transaction["status"] == BookTransactionStatus.IN_QUEUE:
         return {"message": "Book not available"}
-    book_item = BookItems.find_one({"_id": ObjectId(book_transaction["book_item_id"])})
+    # book_item = BookItems.find_one({"_id": ObjectId(book_transaction["book_item_id"])})
+
+    BookTransactions.update_one(
+        {"_id": ObjectId(book_trans_id)},
+        {
+            "$set": {
+                "status": BookTransactionStatus.ISSUED,
+                "date_of_issue": datetime.utcnow(),
+                "date_of_return": datetime.utcnow() + timedelta(days=15),
+            }
+        },
+    )
     BookItems.update_one(
-        {"_id": ObjectId(book_item["_id"])}, {"$set": {"status": BookStatus.ISSUED}}
+        {"_id": ObjectId(book_transaction["book_item_id"])},
+        {"$set": {"status": BookStatus.ISSUED}},
     )
     book = Books.find_one({"_id": ObjectId(book_transaction["book_id"])})
     Books.update_one(
@@ -190,22 +210,41 @@ def issue_book(book_trans_id: str):
     book_queue = get_book_queue(book_transaction["book_id"])
     if book_queue:
         if len(book_queue["queue"]) > 0:
+            inq_trans = BookTransactions.find_one(
+                {
+                    "book_id": ObjectId(book_transaction["book_id"]),
+                    "user_id": ObjectId(book_queue["queue"][0]),
+                }
+            )
+            if not inq_trans:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Book transaction not found",
+                )
+            BookTransactions.update_one(
+                {
+                    "book_id": ObjectId(book_transaction["book_id"]),
+                    "user_id": ObjectId(book_queue["queue"][0]),
+                },
+                {"$set": {"status": BookTransactionStatus.RESERVED}},
+            )
             BookQueue.update_one(
                 {"_id": ObjectId(book_queue["_id"])},
                 {"$pop": {"queue": -1}},
             )
-            book_transaction = BookTransaction(
-                book_id=ObjectId(book_transaction["book_id"]),
-                user_id=ObjectId(book_queue["queue"][0]),
-                status=BookStatus.RESERVED,
-                date_of_reservation=datetime.utcnow(),
-            )
-            BookTransactions.insert_one(book_transaction.dict())
+
+            # book_transaction = BookTransaction(
+            #     book_id=ObjectId(book_transaction["book_id"]),
+            #     user_id=ObjectId(book_queue["queue"][0]),
+            #     status=BookStatus.RESERVED,
+            #     date_of_reservation=datetime.utcnow(),
+            # )
+            # BookTransactions.insert_one(book_transaction.dict())
 
     return {
         "book": get_book(book_transaction["book_id"]),
-        "book_item": book_item,
-        "book_transaction": book_transaction,
+        # "book_item": book_item,
+        # "book_transaction": book_transaction,
     }
 
 
@@ -263,13 +302,69 @@ def return_book(book_trans_id: str):
             }
         },
     )
-    
+
     return {
         "book": get_book(book_item["book_id"]),
-        "book_item": book_item,   
+        "book_item": book_item,
     }
 
 
 def get_all_book_transactions():
-    bookTransListEntity(BookTransactions.find({}));
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "books",
+                "localField": "book_id",
+                "foreignField": "_id",
+                "as": "book",
+            }
+        },
+        {"$unwind": "$book"},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "_id",
+                "as": "user",
+            }
+        },
+        {"$unwind": "$user"},
+        {
+            "$lookup": {
+                "from": "book_items",
+                "localField": "book_item_id",
+                "foreignField": "_id",
+                "as": "book_item",
+            }
+        },
+        {"$unwind": "$book_item"},
+        {
+            "$project": {
+                "book": "$book",
+                "book_item": "$book_item",
+                "id": "$_id",
+                "book_id": 1,
+                "user": "$user",
+                "status": 1,
+                "date_of_return": 1,
+                "date_of_issue": 1,
+                "actual_date_of_return": 1,
+                "fine": 1,
+                "issued_by": 1,
+                "date_of_reservation": 1,
+            }
+        },
+    ]
+    book_trans = list(BookTransactions.aggregate(pipeline))
+    return book_trans
 
+
+def get_book_item(book_item_id: str):
+    book_item = BookItems.find_one({"_id": ObjectId(book_item_id)})
+    if not book_item:
+        raise HTTPException(
+            status_code=400,
+            detail="Book item not found",
+        )
+    book_item["_id"] = str(book_item["_id"])
+    return book_item

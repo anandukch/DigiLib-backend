@@ -14,6 +14,7 @@ import app.books.crud as crud
 from app.books.schemas import Author, Book
 from app.common import UserRoles
 from app.oauth import get_current_user
+from app.serializers.book_trans import bookTransListEntity
 from app.utils import role_decorator
 
 book_router = APIRouter()
@@ -38,14 +39,24 @@ def add_author(author: Author):
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding author"
         )
 
-
+@book_router.get("/transactions")
+def get_all():
+    try:
+        return bookTransListEntity(crud.get_all_book_transactions())
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error"
+        )
+        
 @book_router.get("/")
 def get_all_books():
     try:
         return crud.get_books()
     except Exception as e:
-        print(e)
-        return {"error": "Error getting books"}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting books"
+        )
 
 
 @book_router.get("/{book_id}")
@@ -68,20 +79,21 @@ def add_book(book: Book, user=Depends(get_current_user)):
         )
 
 
-@book_router.post("/reserve/{book_id}")
+@book_router.post("/{book_id}/reserve")
 @role_decorator(role=[UserRoles.STUDENT])
 def reserve_book(book_id: str, user: str = Depends(get_current_user)):
     return crud.reserve_book(book_id, user)
 
-@book_router.post("/issue/{book_item_id}")
-def issue_book(book_item_id: str):
-    try:
-        return crud.issue_book(book_item_id)
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error issuing book"
-        )
+
+@book_router.post("/{book_trans_id}/issue")
+def issue_book(book_trans_id: str):
+    # try:
+        return crud.issue_book(book_trans_id)
+    # except Exception as e:
+    #     print(e)
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST, detail="Error issuing book"
+    #     )
 
 
 @book_router.post("/return/{book_item_id}")
@@ -96,17 +108,10 @@ def return_book(book_trans_id: str):
         )
 
 
-@book_router.get("/transactions")
-def get_all():
-    try:
-        return crud.get_all_book_transactions()
-    except Exception as e:
-        raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Error"
-                )
 
-@book_router.get("/transaction/{book_id}/")
+
+
+@book_router.get("/transactions/{book_id}")
 def get_book_transactions(
     book_id: str, type: str = None, user=Depends(get_current_user)
 ):
@@ -119,15 +124,5 @@ def get_book_transactions(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error getting book transactions",
         )
-        
 
-@book_router.post("/upload")
-def upload_books(file: UploadFile = File(...)):
-    try:
-        return crud.upload_file(file)
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error uploading books"
-        )
-        
+

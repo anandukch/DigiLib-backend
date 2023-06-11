@@ -18,14 +18,14 @@ def get_users(user=Depends(get_current_user)):
 
 
 @user_router.get("/profile")
-@role_decorator([UserRoles.STUDENT, UserRoles.STAFF])
+@role_decorator([UserRoles.STUDENT, UserRoles.FACULITY,UserRoles.ADMIN])
 def get_user_profile(user: dict = Depends(get_current_user)):
-    return userResponseEntity(userCrud.get(user.get("id")))
+    return userResponseEntity(userCrud.get(user.get("id")),user.get("role"))
 
 
 # get user transactions
 @user_router.get("/transactions")
-@role_decorator([UserRoles.STUDENT, UserRoles.STAFF])
+@role_decorator([UserRoles.STUDENT, UserRoles.FACULITY])
 def get_user_transactions(user: dict = Depends(get_current_user)):
     try:
         trans = userCrud.get_transactions(user_id=user.get("id"))

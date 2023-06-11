@@ -5,21 +5,26 @@ from pydantic import BaseModel, EmailStr, constr
 from app.users.schemas import UserBaseSchema
 
 
-
 class CreateUserSchema(UserBaseSchema):
     password: constr(min_length=8)
-    passwordConfirm: str
     verified: bool = False
-    role:str
+    role: constr(min_length=1)
+
 
 class StudentCreateSchema(UserBaseSchema):
-    adm_no:str
-    semester:int
-    branch:str
+    adm_no: str
+    semester: int
+    department: str
+
+
+class FacultyCreateSchema(UserBaseSchema):
+    designation: str
+    department: str
+
 
 class LoginUserSchema(BaseModel):
     email: EmailStr
-    password: constr(min_length=8)
+    password: str
 
 
 class Token(BaseModel):

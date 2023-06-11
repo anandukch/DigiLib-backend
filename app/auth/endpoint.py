@@ -42,11 +42,13 @@ def login(user_data: LoginUserSchema, res: Response) -> dict:
         "access_token": create_access_token(
             {"id": str(db_user["_id"]), "role": db_user["role"]}
         ),
+        "role": db_user["role"],
     }
 
 
 @auth_router.post("/register")
 def register(payload: CreateUserSchema):
+    print(payload)
     user = User.find_one({"email": payload.email.lower()})
     if user:
         raise HTTPException(
@@ -56,20 +58,29 @@ def register(payload: CreateUserSchema):
         try:
             if StudentCreateSchema.validate(payload):
                 payload.adm_no = payload.adm_no.lower()
-                payload.branch = payload.branch.lower()
+                payload.department = payload.department.lower()
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors()
             ) 
+    
+    
     payload.password = hash_password(payload.password)
-    del payload.passwordConfirm
+    # del payload.passwordConfirm
     payload.verified = True
     payload.email = payload.email.lower()
     payload.created_at = datetime.utcnow()
     payload.updated_at = payload.created_at
     result = User.insert_one(payload.dict())
     new_user = userResponseEntity(User.find_one({"_id": result.inserted_id}),payload.role)
-    return {"status": "success", "user": new_user}
+    # return {"status": "success", "user": new_user}
+    return {
+        "status": "success",
+        # "access_token": create_access_token(
+        #     {"id":  result.inserted_id, "role": new_user["role"]}
+        # ),
+        # "role": new_user["role"],
+    }
 
 
 @auth_router.delete("/delete")

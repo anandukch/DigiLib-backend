@@ -48,7 +48,7 @@ class UserRoles:
     STUDENT = "student"
     ADMIN = "admin"
     ISSUER = "issuer"
-    STAFF = "staff"
+    FACULITY = "faculity"
 
 
 class BaseCrud:

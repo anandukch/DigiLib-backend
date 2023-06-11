@@ -26,7 +26,7 @@ def userResponseEntity(user, role: UserRoleEnum = UserRoles.STUDENT) -> dict:
     
     if role == UserRoles.STUDENT:
         res["semester"] = user["semester"]
-        res["branch"] = user["branch"]
+        res["department"] = user["department"]
         res["adm_no"] = user["adm_no"]
     return res
 
