@@ -8,8 +8,7 @@ from fastapi import HTTPException, UploadFile
 from app.books.schemas import Author, AuthorDB, Book, BookDB, BookItem, BookTransaction
 from app.common import BaseCrud, BookStatus, BookTransactionStatus
 from app.db import Authors, BookItems, BookQueue, BookTransactions, Books, Utils
-from app.exception_handler import exception_handler
-from app.serializers.book_trans import bookTransEntity, bookTransListEntity
+from app.serializers.book_trans import bookTransListEntity
 from app.serializers.books import (
     authorListResponseEntity,
     authorResposneEntity,
@@ -41,6 +40,7 @@ def add_book(book: dict):
     """
     Add a book
     """
+    print(book)
     book["available_copies"] = book["no_of_copies"]
     book["virtual_copies"] = book["no_of_copies"]
     new_book = Books.insert_one(book)
@@ -84,9 +84,9 @@ def reserve_book(book_id: str, user: dict):
     Reserve a book
     """
     book_trans = BookTransactions.find_one(
-        {"book_id": ObjectId(book_id), "user_id": ObjectId(user["id"])}
+        {"book_id": ObjectId(book_id), "user_id": ObjectId(user["id"]),"status": {"$ne": BookTransactionStatus.RETURNED}}
     )
-
+    print(book_trans)
     if book_trans:
         if book_trans["status"] == BookTransactionStatus.RESERVED:
             raise HTTPException(
@@ -103,11 +103,11 @@ def reserve_book(book_id: str, user: dict):
                 status_code=400,
                 detail="Book already in queue",
             )
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail="Book already returned",
-            )
+        # else:
+        #     raise HTTPException(
+        #         status_code=400,
+        #         detail="Book already returned",
+        #     )
 
     book = get_book(book_id)
     if book["virtual_copies"] == 0:
@@ -205,46 +205,8 @@ def issue_book(book_trans_id: str):
         {"_id": ObjectId(book_transaction["book_id"])},
         {"$set": {"available_copies": book["available_copies"] - 1}},
     )
-
-    # check if book queue is empty
-    book_queue = get_book_queue(book_transaction["book_id"])
-    if book_queue:
-        if len(book_queue["queue"]) > 0:
-            inq_trans = BookTransactions.find_one(
-                {
-                    "book_id": ObjectId(book_transaction["book_id"]),
-                    "user_id": ObjectId(book_queue["queue"][0]),
-                }
-            )
-            if not inq_trans:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Book transaction not found",
-                )
-            BookTransactions.update_one(
-                {
-                    "book_id": ObjectId(book_transaction["book_id"]),
-                    "user_id": ObjectId(book_queue["queue"][0]),
-                },
-                {"$set": {"status": BookTransactionStatus.RESERVED}},
-            )
-            BookQueue.update_one(
-                {"_id": ObjectId(book_queue["_id"])},
-                {"$pop": {"queue": -1}},
-            )
-
-            # book_transaction = BookTransaction(
-            #     book_id=ObjectId(book_transaction["book_id"]),
-            #     user_id=ObjectId(book_queue["queue"][0]),
-            #     status=BookStatus.RESERVED,
-            #     date_of_reservation=datetime.utcnow(),
-            # )
-            # BookTransactions.insert_one(book_transaction.dict())
-
     return {
-        "book": get_book(book_transaction["book_id"]),
-        # "book_item": book_item,
-        # "book_transaction": book_transaction,
+        "message": "Book issued",
     }
 
 
@@ -268,11 +230,11 @@ def get_book_transactions(bookId: str, type: str):
 
 
 def get_book_trans(book_trans_id: str):
-    return bookTransEntity(BookTransactions.find_one({"_id": ObjectId(book_trans_id)}))
+    return BookTransactions.find_one({"_id": ObjectId(book_trans_id)})
 
 
 def return_book(book_trans_id: str):
-    book_trans = get_book_trans(book_trans_id)
+    book_trans = bookTransactionsCrud.get(book_trans_id)
     if not book_trans:
         raise HTTPException(
             status_code=400,
@@ -285,7 +247,7 @@ def return_book(book_trans_id: str):
             detail="Book item not found",
         )
     BookItems.update_one(
-        {"_id": ObjectId(book_item["_id"])}, {"$set": {"status": BookStatus.RETURNED}}
+        {"_id": ObjectId(book_item["_id"])}, {"$set": {"status": BookStatus.AVAILABLE}}
     )
 
     Books.update_one(
@@ -298,14 +260,44 @@ def return_book(book_trans_id: str):
         {
             "$set": {
                 "status": BookTransactionStatus.RETURNED,
-                "date_of_return": datetime.utcnow(),
+                "actual_date_of_return": datetime.utcnow(),
             }
         },
     )
 
+    book_queue = bookQueueCrud.get(book_item["book_id"])
+    if book_queue:
+        if len(book_queue["queue"]) > 0:
+            BookItems.update_one(
+                {"_id": ObjectId(book_item["_id"])},
+                {"$set": {"status": BookStatus.RESERVED}},
+            )
+            book = Books.find_one({"_id": ObjectId(book_item["book_id"])})
+            Books.update_one(
+                {"_id": ObjectId(book_item["book_id"])},
+                {"$set": {"virtual_copies": book["virtual_copies"] - 1}},
+            )
+            bookTransactionsCrud.update(
+                {
+                    "user_id": ObjectId(book_queue["queue"][0]),
+                    "book_id": ObjectId(book_item["book_id"]),
+                    "status": BookTransactionStatus.IN_QUEUE,
+                },
+                {
+                    "book_item_id": ObjectId(book_item["_id"]),
+                    "status": BookTransactionStatus.RESERVED,
+                },
+            )
+            Books.update_one(
+                {"_id": ObjectId(book_item["book_id"])},
+                {"$inc": {"virtual_copies": -1}},
+            )
+
+            book_queue["queue"].pop(0)
+            bookQueueCrud.update({"_id": ObjectId(book_queue["_id"])}, book_queue)
+
     return {
-        "book": get_book(book_item["book_id"]),
-        "book_item": book_item,
+        "message": "Book returned",
     }
 
 
@@ -368,3 +360,33 @@ def get_book_item(book_item_id: str):
         )
     book_item["_id"] = str(book_item["_id"])
     return book_item
+
+
+class BookQueueCrud(BaseCrud):
+    def __init__(self):
+        super().__init__(BookQueue)
+
+    pass
+
+
+bookQueueCrud = BookQueueCrud()
+
+
+class BookTransactionsCrud(BaseCrud):
+    def __init__(self):
+        super().__init__(BookTransactions)
+
+    pass
+
+
+bookTransactionsCrud = BookTransactionsCrud()
+
+
+class BookItemsCrud(BaseCrud):
+    def __init__(self):
+        super().__init__(BookItems)
+
+    pass
+
+
+bookItemsCrud = BookItemsCrud()

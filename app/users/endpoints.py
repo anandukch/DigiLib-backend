@@ -4,7 +4,6 @@ from app.common import UserRoles
 from app.oauth import get_current_user
 from app.serializers.book_trans import bookTransListEntity
 from app.serializers.users import userListEntity, userResponseEntity
-from app.users.crud import UserCrud
 from app.users.crud import userCrud
 from app.utils import role_decorator
 
@@ -22,8 +21,6 @@ def get_users(user=Depends(get_current_user)):
 def get_user_profile(user: dict = Depends(get_current_user)):
     return userResponseEntity(userCrud.get(user.get("id")),user.get("role"))
 
-
-# get user transactions
 @user_router.get("/transactions")
 @role_decorator([UserRoles.STUDENT, UserRoles.FACULITY])
 def get_user_transactions(user: dict = Depends(get_current_user)):

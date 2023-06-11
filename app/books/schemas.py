@@ -1,8 +1,4 @@
-from ast import Str
 from datetime import date, datetime
-from typing import Any, List
-from click import File
-from fastapi import UploadFile
 from pydantic import BaseModel, Field
 from bson.objectid import ObjectId
 

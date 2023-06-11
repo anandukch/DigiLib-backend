@@ -64,8 +64,8 @@ class BaseCrud:
     def create(self, data: dict):
         return self.db.insert_one(data)
 
-    def update(self, id: str, data: dict):
-        return self.db.update_one({"_id": ObjectId(id)}, {"$set": data})
+    def update(self, condition: dict, data: dict):
+        return self.db.update_one(condition, {"$set": data})
 
     def delete(self, id: str):
         return self.db.delete_one({"_id": ObjectId(id)})
