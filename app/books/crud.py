@@ -40,7 +40,6 @@ def add_book(book: dict):
     """
     Add a book
     """
-    print(book)
     book["available_copies"] = book["no_of_copies"]
     book["virtual_copies"] = book["no_of_copies"]
     new_book = Books.insert_one(book)
@@ -86,7 +85,6 @@ def reserve_book(book_id: str, user: dict):
     book_trans = BookTransactions.find_one(
         {"book_id": ObjectId(book_id), "user_id": ObjectId(user["id"]),"status": {"$ne": BookTransactionStatus.RETURNED}}
     )
-    print(book_trans)
     if book_trans:
         if book_trans["status"] == BookTransactionStatus.RESERVED:
             raise HTTPException(
