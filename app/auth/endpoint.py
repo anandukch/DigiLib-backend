@@ -27,6 +27,11 @@ def check(user: str = Depends(get_current_user)):
 # @exception_handler
 def login(user_data: LoginUserSchema, res: Response) -> dict:
     db_user = User.find_one({"email": user_data.email.lower()})
+
+    if not db_user["verified"]:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not verified"
+        )
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -37,10 +42,7 @@ def login(user_data: LoginUserSchema, res: Response) -> dict:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Invalid credentials pass",
         )
-    if not db_user["verified"]:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not verified"
-        )
+
     return {
         "status": "success",
         "access_token": create_access_token(

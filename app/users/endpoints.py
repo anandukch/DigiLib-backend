@@ -36,16 +36,10 @@ def get_user_transactions(user: dict = Depends(get_current_user)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-
-@user_router.get("/{user_id}")
-def get_user(user_id: str, user=Depends(get_current_user)):
-    return userResponseEntity(userCrud.get(user_id))
-
-
-@user_router.get("/non_verified")
+@user_router.get("/nonverified")
 @role_decorator([UserRoles.ADMIN])
 def get_non_verified_users(user=Depends(get_current_user)):
-    users = userCrud.get_non_verified_users()
+    users = userCrud.get_non_verified()
     if not users:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -53,3 +47,10 @@ def get_non_verified_users(user=Depends(get_current_user)):
             headers={"WWW-Authenticate": "Bearer"},
         )
     return userListEntity(users)
+
+@user_router.get("/{user_id}")
+def get_user(user_id: str, user=Depends(get_current_user)):
+    return userResponseEntity(userCrud.get(user_id))
+
+
+
