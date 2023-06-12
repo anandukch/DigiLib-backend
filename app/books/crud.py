@@ -28,7 +28,9 @@ def get_book(book_id: str) -> Book:
     """
     Get a book by id
     """
-    return bookResposneEntity(Books.find_one({"_id": ObjectId(book_id)}))
+    return bookResposneEntity(
+        Books.find_one({"_id": ObjectId(book_id)}, sort=[("_id", -1)])
+    )
 
 
 def upload_file(file: UploadFile = File(...)):
@@ -83,7 +85,11 @@ def reserve_book(book_id: str, user: dict):
     Reserve a book
     """
     book_trans = BookTransactions.find_one(
-        {"book_id": ObjectId(book_id), "user_id": ObjectId(user["id"]),"status": {"$ne": BookTransactionStatus.RETURNED}}
+        {
+            "book_id": ObjectId(book_id),
+            "user_id": ObjectId(user["id"]),
+            "status": {"$ne": BookTransactionStatus.RETURNED},
+        }
     )
     if book_trans:
         if book_trans["status"] == BookTransactionStatus.RESERVED:
@@ -344,6 +350,7 @@ def get_all_book_transactions():
                 "date_of_reservation": 1,
             }
         },
+        {"$sort": {"_id": -1}},
     ]
     book_trans = list(BookTransactions.aggregate(pipeline))
     return book_trans
