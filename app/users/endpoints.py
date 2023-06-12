@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException,status
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.common import UserRoles
 
 from app.oauth import get_current_user
@@ -17,16 +17,17 @@ def get_users(user=Depends(get_current_user)):
 
 
 @user_router.get("/profile")
-@role_decorator([UserRoles.STUDENT, UserRoles.FACULITY,UserRoles.ADMIN])
+@role_decorator([UserRoles.STUDENT, UserRoles.FACULITY, UserRoles.ADMIN])
 def get_user_profile(user: dict = Depends(get_current_user)):
-    return userResponseEntity(userCrud.get(user.get("id")),user.get("role"))
+    return userResponseEntity(userCrud.get(user.get("id")), user.get("role"))
+
 
 @user_router.get("/transactions")
 @role_decorator([UserRoles.STUDENT, UserRoles.FACULITY])
 def get_user_transactions(user: dict = Depends(get_current_user)):
     try:
         trans = userCrud.get_transactions(user_id=user.get("id"))
-        
+
         return bookTransListEntity(trans)
     except Exception as e:
         raise HTTPException(
@@ -39,3 +40,16 @@ def get_user_transactions(user: dict = Depends(get_current_user)):
 @user_router.get("/{user_id}")
 def get_user(user_id: str, user=Depends(get_current_user)):
     return userResponseEntity(userCrud.get(user_id))
+
+
+@user_router.get("/non_verified")
+@role_decorator([UserRoles.ADMIN])
+def get_non_verified_users(user=Depends(get_current_user)):
+    users = userCrud.get_non_verified_users()
+    if not users:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No users found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return userListEntity(users)

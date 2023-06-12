@@ -37,6 +37,10 @@ def login(user_data: LoginUserSchema, res: Response) -> dict:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Invalid credentials pass",
         )
+    if not db_user["verified"]:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not verified"
+        )
     return {
         "status": "success",
         "access_token": create_access_token(
@@ -62,17 +66,18 @@ def register(payload: CreateUserSchema):
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors()
-            ) 
-    
-    
+            )
+
     payload.password = hash_password(payload.password)
     # del payload.passwordConfirm
-    payload.verified = True
+    payload.verified = False
     payload.email = payload.email.lower()
     payload.created_at = datetime.utcnow()
     payload.updated_at = payload.created_at
     result = User.insert_one(payload.dict())
-    new_user = userResponseEntity(User.find_one({"_id": result.inserted_id}),payload.role)
+    new_user = userResponseEntity(
+        User.find_one({"_id": result.inserted_id}), payload.role
+    )
     # return {"status": "success", "user": new_user}
     return {
         "status": "success",

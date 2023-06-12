@@ -86,7 +86,6 @@ def get_book(book_id: str):
 @role_decorator(role=[UserRoles.ADMIN])
 def add_book(book: Book, user=Depends(get_current_user)):
     try:
-        print("add book")
         return crud.add_book(book.dict())
     except Exception as e:
         raise HTTPException(

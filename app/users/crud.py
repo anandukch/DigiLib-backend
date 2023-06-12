@@ -8,6 +8,9 @@ class UserCrud(BaseCrud):
     def __init__(self):
         super().__init__(User)
 
+    def get_non_verified_users(self):
+        return self.db.find({"verified": False})
+
     def get_transactions(self, user_id: str):
         pipeline = [
             {"$match": {"user_id": ObjectId(user_id)}},
