@@ -43,7 +43,7 @@ async def seed():
         )
 
 
-origins = ["http://localhost:5173"]
+origins = ["http://localhost:5173", "*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,10 +54,11 @@ app.add_middleware(
 )
 
 
-app.include_router(auth_router, prefix="/auth")
-app.include_router(book_router, prefix="/books")
-app.include_router(api_router, prefix="/api")
-app.include_router(user_router, prefix="/users")
+api_router.include_router(auth_router, prefix="/auth")
+api_router.include_router(book_router, prefix="/books")
+# app.include_router(api_router, prefix="/api")
+api_router.include_router(user_router, prefix="/users")
+app.include_router(api_router)
 
 
 if __name__ == "__main__":

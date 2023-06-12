@@ -43,13 +43,22 @@ def login(user_data: LoginUserSchema, res: Response) -> dict:
             detail="Invalid credentials pass",
         )
 
-    return {
-        "status": "success",
-        "access_token": create_access_token(
+    response=Response()
+    response.set_cookie(key="access_token", value=create_access_token(
             {"id": str(db_user["_id"]), "role": db_user["role"]}
-        ),
-        "role": db_user["role"],
-    }
+        ), httponly=True)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
+    # return {
+    #     "status": "success",
+    #     "access_token": create_access_token(
+    #         {"id": str(db_user["_id"]), "role": db_user["role"]}
+    #     ),
+    #     "role": db_user["role"],
+    # }
 
 
 @auth_router.post("/register")
