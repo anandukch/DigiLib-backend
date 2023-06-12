@@ -275,7 +275,6 @@ def return_book(book_trans_id: str):
 
     book_queue = BookQueue.find_one({"book_id": ObjectId(book_item["book_id"])})
     if book_queue:
-        # print( len(book_queue["queue"]))
         if len(book_queue["queue"]) > 0:
             BookItems.update_one(
                 {"_id": ObjectId(book_item["_id"])},
