@@ -7,8 +7,6 @@ from app.settings import settings
 
 client = mongo_client.MongoClient(settings.MONGO_URL, serverSelectionTimeoutMS=5000)
 
-
-# def init_db():
 try:
         conn = client.server_info()
         print(f'Connected to MongoDB {conn.get("version")}')
