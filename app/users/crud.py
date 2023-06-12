@@ -60,6 +60,7 @@ class UserCrud(BaseCrud):
                     "date_of_reservation": 1,
                 }
             },
+            {"$sort": {"_id": -1}},
         ]
         book_transactions = list(BookTransactions.aggregate(pipeline))
         return book_transactions

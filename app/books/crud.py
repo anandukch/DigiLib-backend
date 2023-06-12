@@ -42,6 +42,10 @@ def add_book(book: dict):
     """
     Add a book
     """
+    if book["image"] == "":
+        raise HTTPException(
+            status_code=400, detail="Image is required for adding a book"
+        )
     book["available_copies"] = book["no_of_copies"]
     book["virtual_copies"] = book["no_of_copies"]
     new_book = Books.insert_one(book)
@@ -269,8 +273,9 @@ def return_book(book_trans_id: str):
         },
     )
 
-    book_queue = bookQueueCrud.get(book_item["book_id"])
+    book_queue = BookQueue.find_one({"book_id": ObjectId(book_item["book_id"])})
     if book_queue:
+        # print( len(book_queue["queue"]))
         if len(book_queue["queue"]) > 0:
             BookItems.update_one(
                 {"_id": ObjectId(book_item["_id"])},
