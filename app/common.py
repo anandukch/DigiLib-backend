@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Collection
 
 from bson import ObjectId
 
@@ -50,9 +51,9 @@ class UserRoles:
     ISSUER = "issuer"
     FACULITY = "faculity"
 
-
+from pymongo.collection import Collection
 class BaseCrud:
-    def __init__(self, db):
+    def __init__(self, db:Collection):
         self.db = db
 
     def get_all(self):

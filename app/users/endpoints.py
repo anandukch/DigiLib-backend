@@ -36,6 +36,7 @@ def get_user_transactions(user: dict = Depends(get_current_user)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
 @user_router.get("/nonverified")
 @role_decorator([UserRoles.ADMIN])
 def get_non_verified_users(user=Depends(get_current_user)):
@@ -48,9 +49,21 @@ def get_non_verified_users(user=Depends(get_current_user)):
         )
     return userListEntity(users)
 
+
+@user_router.post("/verify/{user_id}")
+@role_decorator([UserRoles.ADMIN])
+def verify_user(user_id: str, user=Depends(get_current_user)):
+    try:
+        userCrud.verify(user_id)
+        return {"message": "User verified"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error verifying user",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
 @user_router.get("/{user_id}")
 def get_user(user_id: str, user=Depends(get_current_user)):
     return userResponseEntity(userCrud.get(user_id))
-
-
-
