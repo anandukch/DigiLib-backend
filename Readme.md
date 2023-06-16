@@ -7,4 +7,4 @@ This is a digital library project's backend for the department of Computer Scien
 ## Installation
 
 1. Clone the repository
-2. Run `docker-compose up`
+2. Run `docker compose up`
