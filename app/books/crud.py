@@ -21,6 +21,7 @@ def get_books():
     """
     Get all books
     """
+    Books.find({}).skip(0).limit(10)
     return bookListResponseEntity(list(Books.find({})))
 
 

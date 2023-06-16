@@ -2,6 +2,8 @@ from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, status
 from app.auth.endpoint import auth_router
 from app.books.endpoint import book_router
 from app.users.endpoints import user_router
+from app.library.endpoints import library_router
+
 from fastapi.middleware.cors import CORSMiddleware
 import app.db
 
@@ -58,6 +60,7 @@ api_router.include_router(auth_router, prefix="/auth")
 api_router.include_router(book_router, prefix="/books")
 # app.include_router(api_router, prefix="/api")
 api_router.include_router(user_router, prefix="/users")
+api_router.include_router(library_router, prefix="/library")
 app.include_router(api_router)
 
 

@@ -62,9 +62,9 @@ def return_book(book_trans_id: str, user=Depends(get_current_user)):
 @book_router.get("/")
 def get_all_books():
     try:
-        print("get all books")
         return crud.get_books()
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting books"
         )
