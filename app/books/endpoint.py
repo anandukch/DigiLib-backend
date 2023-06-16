@@ -85,12 +85,12 @@ def get_book(book_id: str):
 @book_router.post("/")
 @role_decorator(role=[UserRoles.ADMIN])
 def add_book(book: Book, user=Depends(get_current_user)):
-    # try:
+    try:
         return crud.add_book(book.dict())
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding book"
-    #     )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding book"
+        )
 
 
 @book_router.post("/{book_id}/reserve")
@@ -101,15 +101,14 @@ def reserve_book(book_id: str, user: str = Depends(get_current_user)):
 
 @book_router.post("/{book_trans_id}/issue")
 def issue_book(book_trans_id: str):
-    # try:
-    return crud.issue_book(book_trans_id)
+    try:
+        return crud.issue_book(book_trans_id)
 
-
-# except Exception as e:
-#     print(e)
-#     raise HTTPException(
-#         status_code=status.HTTP_400_BAD_REQUEST, detail="Error issuing book"
-#     )
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error issuing book"
+        )
 
 
 @book_router.get("/transactions/{book_id}")

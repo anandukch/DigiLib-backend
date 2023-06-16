@@ -2,22 +2,6 @@ from functools import wraps
 
 from fastapi import HTTPException
 
-# def decorator(a,b):
-#     print(a)
-#     def inner(func):
-#         print('inner')
-#         def wrapper(*args,**kwargs):
-#             print(args[0])
-#             return func(*args,**kwargs)
-#         return wrapper
-#     return inner
-
-# @decorator('a',2)
-# def hello(a):
-#     print("hello")
-# hello('admin')
-
-
 def role_decorator(role: list):
     """_summary_
 

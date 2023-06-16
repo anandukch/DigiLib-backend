@@ -58,7 +58,6 @@ app.add_middleware(
 
 api_router.include_router(auth_router, prefix="/auth")
 api_router.include_router(book_router, prefix="/books")
-# app.include_router(api_router, prefix="/api")
 api_router.include_router(user_router, prefix="/users")
 api_router.include_router(library_router, prefix="/library")
 app.include_router(api_router)

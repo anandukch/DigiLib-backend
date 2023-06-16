@@ -1,4 +1,3 @@
-# create an exception hanbler decorator to avoid using try catch block
 
 from functools import wraps
 from fastapi import HTTPException, status
