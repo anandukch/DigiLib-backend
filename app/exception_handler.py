@@ -9,9 +9,8 @@ def exception_handler(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            print(e)
             if type(e) == HTTPException:
-                raise e
+                return e
             else:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=e

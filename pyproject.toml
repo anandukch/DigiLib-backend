@@ -5,6 +5,10 @@ description = "Backend for digilib library managment system"
 authors = ["anandukch <anandukch@gmail.com>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+start = "uvicorn app.main:app --reload"
+dev = "python ./scripts/clean_db.py"
+
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = {extras = ["all"], version = "^0.95.2"}

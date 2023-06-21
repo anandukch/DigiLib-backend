@@ -4,11 +4,29 @@ from app.common import UserRoles
 
 from app.oauth import get_current_user
 from app.serializers.book_trans import bookTransListEntity
-from app.serializers.users import userListEntity, userResponseEntity
+from app.serializers.users import (
+    userListEntity,
+    userResponseEntity,
+    userResponsesEntity,
+)
 from app.users.crud import userCrud
 from app.utils import hash_password, role_decorator
 
 user_router = APIRouter()
+
+
+@user_router.get("/search")
+def search_user(name: str = None, adm_no: str = None):
+    try:
+        users = userCrud.search(name, adm_no)
+        return userResponsesEntity(users)
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error searching user",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @user_router.get("/")
@@ -22,13 +40,13 @@ def get_users(user=Depends(get_current_user)):
     [UserRoles.STUDENT, UserRoles.FACULITY, UserRoles.ADMIN, UserRoles.ISSUER]
 )
 def get_user_profile(user=Depends(get_current_user)):
-    user=userResponseEntity(userCrud.get(user.get("id")), user.get("role"))
+    user = userResponseEntity(userCrud.get(user.get("id")), user.get("role"))
     return {
         "name": user.get("name"),
         "email": user.get("email"),
         "role": user.get("role"),
         "verified": user.get("verified"),
-        "created_at": user.get("created_at")
+        "created_at": user.get("created_at"),
     }
 
 
@@ -37,7 +55,6 @@ def get_user_profile(user=Depends(get_current_user)):
 def get_user_transactions(user: dict = Depends(get_current_user)):
     try:
         trans = userCrud.get_transactions(user_id=user.get("id"))
-
         return bookTransListEntity(trans)
     except Exception as e:
         raise HTTPException(

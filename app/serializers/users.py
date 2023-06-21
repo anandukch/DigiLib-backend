@@ -41,3 +41,6 @@ def embeddedUserResponse(user) -> dict:
 
 def userListEntity(users) -> list:
     return [userEntity(user) for user in users]
+
+def userResponsesEntity(users, role: UserRoleEnum = UserRoles.STUDENT) -> list:
+    return [userResponseEntity(user, role) for user in users]

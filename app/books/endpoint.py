@@ -100,9 +100,9 @@ def reserve_book(book_id: str, user: str = Depends(get_current_user)):
 
 
 @book_router.post("/{book_trans_id}/issue")
-def issue_book(book_trans_id: str):
+def issue_book(book_trans_id: str, user=Depends(get_current_user)):
     try:
-        return crud.issue_book(book_trans_id)
+        return crud.issue_book(book_trans_id, type)
 
     except Exception as e:
         print(e)

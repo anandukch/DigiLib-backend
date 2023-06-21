@@ -65,5 +65,28 @@ class UserCrud(BaseCrud):
         book_transactions = list(BookTransactions.aggregate(pipeline))
         return book_transactions
 
+    def search(self, name: str = None, adm_no: str = None):
+        # pipeline = [
+        #     {
+        #         "$search": {
+        #             "text": {
+        #                 "query": query,
+        #                 "path": ["name", "email"],
+        #             }
+        #         }
+        #     },
+        #     {"$project": {"name": 1, "email": 1}},
+        # ]
+        # return list(self.db.aggregate(pipeline))
+
+        return list(
+            self.db.find(
+                {
+                    "name": {"$regex": name, "$options": "i"},
+                    "adm_no": {"$regex": adm_no, "$options": "i"},
+                },
+            )
+        )
+
 
 userCrud = UserCrud()

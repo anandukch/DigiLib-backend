@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
-from email.policy import HTTP
 from typing import List
 
 from bson import ObjectId
 from click import File
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile, status
 from app.books.schemas import Author, AuthorDB, Book, BookDB, BookItem, BookTransaction
 from app.common import BaseCrud, BookStatus, BookTransactionStatus
 from app.db import Authors, BookItems, BookQueue, BookTransactions, Books, Utils
+from app.library.crud import LibraryCrud
 from app.serializers.book_trans import bookTransListEntity
 from app.serializers.books import (
     authorListResponseEntity,
@@ -15,6 +15,8 @@ from app.serializers.books import (
     bookListResponseEntity,
     bookResposneEntity,
 )
+
+libraryCrud = LibraryCrud()
 
 
 def get_books():
@@ -138,7 +140,7 @@ def reserve_book(book_id: str, user: dict):
             date_of_reservation=datetime.utcnow(),
         )
         BookTransactions.insert_one(bookTransaction.dict())
-        return book
+        return "Book added to queue"
     else:
         book_item = BookItems.find_one(
             {"book_id": ObjectId(book_id), "status": BookStatus.AVAILABLE}
@@ -372,6 +374,41 @@ def get_book_item(book_item_id: str):
     return book_item
 
 
+def immediate_issue(book_id: dict, user_id: dict):
+    book = get_book(ObjectId(book_id))
+    if not book:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Book not found"
+        )
+    book_item = bookItemsCrud.get_by_status(book_id, BookStatus.AVAILABLE)
+    if not book_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Book not available"
+        )
+
+    days_of_return = libraryCrud.get_lib_config()["days_of_return"]
+    book_trans = BookTransaction(
+        book_id=ObjectId(book_id),
+        book_item_id=ObjectId(book_item["_id"]),
+        date_of_issue=datetime.utcnow(),
+        user_id=ObjectId(user_id),
+        status=BookStatus.ISSUED,
+        date_of_reservation=datetime.utcnow(),
+        date_of_return=datetime.utcnow() + timedelta(days=int(days_of_return)),
+    )
+    bookTransactionsCrud.create(book_trans.dict())
+    bookItemsCrud.update(
+        {"_id": ObjectId(book_item["_id"])}, {"status": BookStatus.ISSUED}
+    )
+    Books.update_one(
+        {"_id": ObjectId(book_id)},
+        {"$inc": {"available_copies": -1, "virtual_copies": -1}},
+    )
+    return {
+        "message": "Book issued",
+    }
+
+
 class BookQueueCrud(BaseCrud):
     def __init__(self):
         super().__init__(BookQueue)
@@ -396,7 +433,8 @@ class BookItemsCrud(BaseCrud):
     def __init__(self):
         super().__init__(BookItems)
 
-    pass
+    def get_by_status(self, book_id: str, status: str):
+        return self.db.find_one({"book_id": ObjectId(book_id), "status": status})
 
 
 bookItemsCrud = BookItemsCrud()

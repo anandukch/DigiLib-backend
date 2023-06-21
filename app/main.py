@@ -3,6 +3,8 @@ from app.auth.endpoint import auth_router
 from app.books.endpoint import book_router
 from app.users.endpoints import user_router
 from app.library.endpoints import library_router
+from app.notifications.endpoints import notification_router
+
 
 from fastapi.middleware.cors import CORSMiddleware
 import app.db
@@ -32,13 +34,13 @@ async def root() -> dict:
 @api_router.delete("/delete")
 async def seed():
     """
-    Seed database
+    Clean database
     """
     try:
         app.db.User.delete_many({})
         app.db.Book.delete_many({})
         app.db.Author.delete_many({})
-        return {"message": "Database seeded"}
+        return {"message": "Database cleaned"}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error seeding database"
@@ -60,6 +62,8 @@ api_router.include_router(auth_router, prefix="/auth")
 api_router.include_router(book_router, prefix="/books")
 api_router.include_router(user_router, prefix="/users")
 api_router.include_router(library_router, prefix="/library")
+api_router.include_router(notification_router, prefix="/notification")
+
 app.include_router(api_router)
 
 
