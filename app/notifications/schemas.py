@@ -28,9 +28,11 @@ from pydantic import BaseModel
 #         json_encoders = {"ObjectId": str}
 
 class NotificationSchema(BaseModel):
-    description: str
-    reciever_id: str | None = None
+    text: str
+    recipient_type: str
+    recipient_id: str | None = None
     sender_id: str | None = None
+    time: str | None = None
     
     class Config:
         orm_mode = True
@@ -38,7 +40,7 @@ class NotificationSchema(BaseModel):
 class NotificationDBSchema(NotificationSchema):
     id: str
     created_at: str
-    updated_at: str
+    # updated_at: str
     is_read: bool
     
     class Config:

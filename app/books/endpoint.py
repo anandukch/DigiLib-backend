@@ -37,7 +37,6 @@ def add_author(author: Author):
 @book_router.get("/transactions")
 def get_all():
     try:
-        print("get all transactions")
         return bookTransListEntity(crud.get_all_book_transactions())
     except Exception as e:
         print(e)

@@ -1,13 +1,14 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, status
+from httpx import delete
 from app.auth.endpoint import auth_router
 from app.books.endpoint import book_router
+from app.db import Authors, BookItems, BookQueue, BookRequests, BookTransactions, Books, Notifications, Projects
 from app.users.endpoints import user_router
 from app.library.endpoints import library_router
 from app.notifications.endpoints import notification_router
 
 
 from fastapi.middleware.cors import CORSMiddleware
-import app.db
 
 app = FastAPI(title="Recipe API", openapi_url="/openapi.json")
 
@@ -32,14 +33,20 @@ async def root() -> dict:
 
 
 @api_router.delete("/delete")
-async def seed():
+async def clean_db():
     """
     Clean database
     """
     try:
-        app.db.User.delete_many({})
-        app.db.Book.delete_many({})
-        app.db.Author.delete_many({})
+        Books.delete_many({})
+        Authors.delete_many({})
+        BookItems.delete_many({})
+        BookQueue.delete_many({})
+        BookRequests.delete_many({})
+        BookTransactions.delete_many({})
+        Projects.delete_many({})
+        Notifications.delete_many({})
+        
         return {"message": "Database cleaned"}
     except Exception as e:
         raise HTTPException(
@@ -62,7 +69,7 @@ api_router.include_router(auth_router, prefix="/auth")
 api_router.include_router(book_router, prefix="/books")
 api_router.include_router(user_router, prefix="/users")
 api_router.include_router(library_router, prefix="/library")
-api_router.include_router(notification_router, prefix="/notification")
+api_router.include_router(notification_router, prefix="/notifications")
 
 app.include_router(api_router)
 

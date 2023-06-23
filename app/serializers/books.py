@@ -3,7 +3,7 @@ def bookResposneEntity(book):
         "id": str(book["_id"]),
         "ISBN": book["ISBN"],  # noqa: E501
         "title": book["title"],
-        "language": book["language"],
+        "description": book["description"],
         "subject": book["subject"],
         "publisher": book["publisher"],
         "author": book["author"],

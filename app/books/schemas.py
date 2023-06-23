@@ -23,21 +23,27 @@ class AuthorDB(Author):
         json_encoders = {ObjectId: str}
 
 
-class Book(BaseModel):
-    ISBN: str = Field(..., alias="ISBN")
-    title: str = Field(..., alias="title")
-    language: str = Field(..., alias="language")
-    subject: str = Field(..., alias="subject")
-    publisher: str = Field(..., alias="publisher")
-    author: str = Field(..., alias="author")
-    no_of_copies: int = Field(..., alias="no_of_copies")
-    image: str = Field(..., alias="image")
+class Image(BaseModel):
+    url: str
+    public_id: str
 
     class Config:
         orm_mode = True
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+class Book(BaseModel):
+    ISBN: str = Field(..., alias="ISBN")
+    title: str = Field(..., alias="title")
+    subject: str = Field(..., alias="subject")
+    description: str = Field(..., alias="description")
+    publisher: str = Field(..., alias="publisher")
+    author: str = Field(..., alias="author")
+    no_of_copies: int = Field(..., alias="no_of_copies")
+    image: Image = Field(..., alias="image")
+
+    class Config:
+        orm_mode = True
+        # allow_population_by_field_name = True
+        # arbitrary_types_allowed = True
+        # json_encoders = {ObjectId: str}
 
 
 class BookDB(Book):
