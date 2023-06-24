@@ -9,9 +9,12 @@ from app.books.schemas import Author, Book
 from app.common import UserRoles
 from app.oauth import get_current_user
 from app.serializers.book_trans import bookTransListEntity
+from app.serializers.books import bookListResponseEntity
 from app.utils import role_decorator
 
 book_router = APIRouter()
+
+book_crud = crud.BookCrud()
 
 
 @book_router.get("/authors")
@@ -43,7 +46,15 @@ def get_all():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error"
         )
-
+@book_router.get("/search")
+def serach_book(title: str = None):
+    try:
+        return bookListResponseEntity(book_crud.search(title))
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error searching book"
+        )
 
 @book_router.post("/{book_trans_id}/return")
 @role_decorator(role=[UserRoles.ADMIN])
@@ -52,7 +63,6 @@ def return_book(book_trans_id: str, user=Depends(get_current_user)):
         print("return book")
         return crud.return_book(book_trans_id)
     except Exception as e:
-        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error returning book"
         )
@@ -72,7 +82,6 @@ def get_all_books():
 @book_router.get("/{book_id}")
 def get_book(book_id: str):
     try:
-        print("get book")
         return crud.get_book(book_id)
     except Exception as e:
         print(e)
@@ -102,9 +111,7 @@ def reserve_book(book_id: str, user: str = Depends(get_current_user)):
 def issue_book(book_trans_id: str, user=Depends(get_current_user)):
     try:
         return crud.issue_book(book_trans_id, type)
-
     except Exception as e:
-        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error issuing book"
         )
@@ -123,3 +130,6 @@ def get_book_transactions(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error getting book transactions",
         )
+
+
+

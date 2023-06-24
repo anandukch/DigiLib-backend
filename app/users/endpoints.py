@@ -16,17 +16,18 @@ user_router = APIRouter()
 
 
 @user_router.get("/search")
-def search_user(name: str = None, adm_no: str = None):
-    try:
-        users = userCrud.search(name, adm_no)
+def search_user( adm_no: str = None):
+    # try:
+        print(adm_no)
+        users = userCrud.search( adm_no)
         return userResponsesEntity(users)
-    except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error searching user",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    # except Exception as e:
+    #     print(e)
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail="Error searching user",
+    #         headers={"WWW-Authenticate": "Bearer"},
+    #     )
 
 
 @user_router.get("/")

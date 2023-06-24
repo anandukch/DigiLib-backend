@@ -54,12 +54,16 @@ def login(user_data: LoginUserSchema, res: Response) -> dict:
 
 @auth_router.post("/register")
 def register(payload: CreateUserSchema):
-    print(payload)
     user = User.find_one({"email": payload.email.lower()})
     if user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
         )
+    if User.find_one({"adm_no": payload.adm_no.lower()}):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Adm no already registered"
+        )
+        
     if payload.role == UserRoles.STUDENT:
         try:
             if StudentCreateSchema.validate(payload):
@@ -71,7 +75,6 @@ def register(payload: CreateUserSchema):
             )
 
     payload.password = hash_password(payload.password)
-    # del payload.passwordConfirm
     payload.verified = False
     payload.email = payload.email.lower()
     payload.created_at = datetime.utcnow()

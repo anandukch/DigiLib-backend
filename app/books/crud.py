@@ -409,6 +409,37 @@ def immediate_issue(book_id: dict, user_id: dict):
     }
 
 
+class BookCrud(BaseCrud):
+    def __init__(self):
+        super().__init__(Books)
+
+    def search(self, query: str):
+        # pipeline = [
+        #     {
+        #         "$search": {
+        #             "autocomplete": {
+        #                 "query": query,
+        #                 "path": "title",
+        #                 "fuzzy": {"maxEdits": 2},
+        #             }
+        #         }
+        #     },
+        #     {"$limit": 5},
+        # ]
+        # books = Books.aggregate(pipeline)
+
+        books = self.db.find(
+            {
+                "$or": [
+                    {"title": {"$regex": query, "$options": "i"}},
+                    {"author": {"$regex": query, "$options": "i"}},
+                    {"publisher": {"$regex": query, "$options": "i"}},
+                ]
+            }
+        )
+        return list(books)
+
+
 class BookQueueCrud(BaseCrud):
     def __init__(self):
         super().__init__(BookQueue)

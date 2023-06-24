@@ -11,6 +11,7 @@ def bookResposneEntity(book):
         "available_copies": book["available_copies"],
         "virtual_copies": book["virtual_copies"],
         "image": book["image"],
+        "semester": book["semester"],
     }
 
 

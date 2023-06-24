@@ -38,6 +38,7 @@ class Book(BaseModel):
     author: str = Field(..., alias="author")
     no_of_copies: int = Field(..., alias="no_of_copies")
     image: Image = Field(..., alias="image")
+    semester: int = Field(..., alias="semester")
 
     class Config:
         orm_mode = True
