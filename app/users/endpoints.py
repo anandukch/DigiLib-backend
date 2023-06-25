@@ -43,6 +43,7 @@ def get_users(user=Depends(get_current_user)):
 )
 def get_user_profile(user=Depends(get_current_user)):
     user = userResponseEntity(userCrud.get(user.get("id")), user.get("role"))
+    print(user.get("id"), user.get("verified"))
     return {
         "name": user.get("name"),
         "email": user.get("email"),

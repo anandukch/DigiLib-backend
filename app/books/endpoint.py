@@ -140,7 +140,7 @@ def add_book(book: Book, user=Depends(get_current_user)):
 
 
 @book_router.post("/{book_id}/reserve")
-@role_decorator(role=[UserRoles.STUDENT])
+@role_decorator(role=[UserRoles.STUDENT,UserRoles.FACULITY])
 def reserve_book(book_id: str, user: str = Depends(get_current_user)):
     return crud.reserve_book(book_id, user)
 

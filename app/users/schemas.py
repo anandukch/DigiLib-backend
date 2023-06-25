@@ -8,11 +8,12 @@ from app.common import UserRoleEnum, UserRoles
 class UserBaseSchema(BaseModel):
     name: str
     email: str
-    adm_no:Optional[str]
+    reg_no:Optional[str]
     semester:Optional[int]
     department:Optional[str]
     designation:Optional[str]
     role: UserRoleEnum = UserRoles.STUDENT
+    active: bool = True
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

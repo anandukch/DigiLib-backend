@@ -59,30 +59,31 @@ def register(payload: CreateUserSchema):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
         )
-    if User.find_one({"adm_no": payload.adm_no.lower()}):
+    if User.find_one({"reg_no": payload.reg_no.lower()}):
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Adm no already registered"
+            status_code=status.HTTP_409_CONFLICT, detail="Reg no already registered"
         )
-        
+
     if payload.role == UserRoles.STUDENT:
         try:
-            if StudentCreateSchema.validate(payload):
-                payload.adm_no = payload.adm_no.lower()
-                payload.department = payload.department.lower()
+            StudentCreateSchema.validate(payload)
         except Exception as e:
+            print(e)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors()
             )
-
+    payload.department = "cse"
+    payload.reg_no = payload.reg_no.lower()
     payload.password = hash_password(payload.password)
     payload.verified = False
     payload.email = payload.email.lower()
     payload.created_at = datetime.utcnow()
     payload.updated_at = payload.created_at
-    result = User.insert_one(payload.dict())
-    new_user = userResponseEntity(
-        User.find_one({"_id": result.inserted_id}), payload.role
-    )
+    payload.active = True
+    User.insert_one(payload.dict())
+    # new_user = userResponseEntity(
+    #     User.find_one({"_id": result.inserted_id}), payload.role
+    # )
     # return {"status": "success", "user": new_user}
     return {
         "status": "success",

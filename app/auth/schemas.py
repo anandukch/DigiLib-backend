@@ -12,14 +12,9 @@ class CreateUserSchema(UserBaseSchema):
 
 
 class StudentCreateSchema(UserBaseSchema):
-    adm_no: str
+    # adm_no: str
     semester: int
-    department: str
 
-
-class FacultyCreateSchema(UserBaseSchema):
-    designation: str
-    department: str
 
 
 class LoginUserSchema(BaseModel):

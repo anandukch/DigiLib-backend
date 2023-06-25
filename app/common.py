@@ -8,7 +8,7 @@ class UserRoleEnum(str, Enum):
     STUDENT = "student"
     ADMIN = "admin"
     ISSUER = "issuer"
-    STAFF = "staff"
+    FACULITY = "faculty"
 
 
 class BookStatusEnum(str, Enum):
@@ -49,7 +49,7 @@ class UserRoles:
     STUDENT = "student"
     ADMIN = "admin"
     ISSUER = "issuer"
-    FACULITY = "faculity"
+    FACULITY = "faculty"
 
 from pymongo.collection import Collection
 class BaseCrud:
