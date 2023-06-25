@@ -7,6 +7,7 @@ from fastapi import (
 import app.books.crud as crud
 from app.books.schemas import Author, Book
 from app.common import UserRoles
+from app.exception_handler import exception_handler
 from app.oauth import get_current_user
 from app.serializers.book_trans import bookTransListEntity
 from app.serializers.books import bookListResponseEntity
@@ -52,11 +53,25 @@ def get_all():
 @book_router.get("/search")
 def serach_book(title: str = None):
     try:
-        return bookListResponseEntity(book_crud.search(title))
+        books = bookListResponseEntity(book_crud.search(title))
+        for book in books:
+            book_item = book_items_crud.get_by_status(book.get("id"), "available")
+            if book_item:
+                book["available"] = True
+            else:
+                book["available"] = False
+            book["acc_no"] = book_item.get("acc_no")
+        return books
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error searching book"
         )
+
+
+@book_router.post("/issue")
+@exception_handler("Error issuing book")
+def immediate_issue(req_data: dict, user=Depends(get_current_user)):
+    return book_crud.immediate_issue(req_data)
 
 
 @book_router.delete("/{book_id}")

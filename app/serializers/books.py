@@ -38,3 +38,6 @@ def bookItemEntity(bookItem):
         "book_id": str(bookItem["book_id"]),
         "status": bookItem["status"],
     }
+    
+def bookItemsEntity(book_items):
+    return [bookItemEntity(book_items) for book_item in book_items]
