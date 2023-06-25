@@ -15,7 +15,7 @@ def bookTransEntity(bookTrans):
         "issued_by": bookTrans["issued_by"],
         "date_of_reservation": bookTrans["date_of_reservation"],
         "book": bookResposneEntity(bookTrans["book"]),
-        "book_item": bookItemEntity(bookTrans["book_item"]),
+        "book_item": bookItemEntity(bookTrans["book_item"]) if bookTrans["book_item"] else None,
         "user":userResponseEntity(bookTrans["user"])
     }
 

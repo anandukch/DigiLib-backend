@@ -48,7 +48,7 @@ def add_book(book: dict):
     """
     Add a book
     """
-    print( book)
+    print(book)
     if book["image"] == "":
         raise HTTPException(
             status_code=400, detail="Image is required for adding a book"
@@ -144,12 +144,13 @@ def reserve_book(book_id: str, user: dict):
             book_queue = BookQueue.insert_one(
                 {"book_id": ObjectId(book_id), "queue": []}
             )
-        if user["id"] in book_queue["queue"]:
-            return {"message": "Book already in queue", "data": book}
-        BookQueue.update_one(
-            {"_id": ObjectId(book_queue["_id"])},
-            {"$push": {"queue": user["id"]}},
-        )
+        else:
+            if user["id"] in book_queue["queue"]:
+                return {"message": "Book already in queue", "data": book}
+            BookQueue.update_one(
+                {"_id": ObjectId(book_queue["_id"])},
+                {"$push": {"queue": user["id"]}},
+            )
         bookTransaction = BookTransaction(
             book_id=ObjectId(book_id),
             user_id=ObjectId(user["id"]),
@@ -334,48 +335,103 @@ def return_book(book_trans_id: str):
 def get_all_book_transactions():
     pipeline = [
         {
-            "$lookup": {
-                "from": "books",
-                "localField": "book_id",
-                "foreignField": "_id",
-                "as": "book",
+            "$facet": {
+                "book_transactions": [
+                    {
+                        "$lookup": {
+                            "from": "books",
+                            "localField": "book_id",
+                            "foreignField": "_id",
+                            "as": "book",
+                        }
+                    },
+                    {"$unwind": "$book"},
+                    {
+                        "$lookup": {
+                            "from": "users",
+                            "localField": "user_id",
+                            "foreignField": "_id",
+                            "as": "user",
+                        }
+                    },
+                    {"$unwind": "$user"},
+                    {
+                        "$lookup": {
+                            "from": "book_items",
+                            "localField": "book_item_id",
+                            "foreignField": "_id",
+                            "as": "book_item",
+                        }
+                    },
+                    {"$unwind": "$book_item"},
+                    {
+                        "$project": {
+                            "book": "$book",
+                            "book_item": "$book_item",
+                            "id": "$_id",
+                            "book_id": 1,
+                            "user": "$user",
+                            "status": 1,
+                            "date_of_return": 1,
+                            "date_of_issue": 1,
+                            "actual_date_of_return": 1,
+                            "fine": 1,
+                            "issued_by": 1,
+                            "date_of_reservation": 1,
+                        }
+                    },
+                ],
+                "in_queue_transactions": [
+                    {"$match": {"status": "in_queue"}},
+                    {
+                        "$lookup": {
+                            "from": "books",
+                            "localField": "book_id",
+                            "foreignField": "_id",
+                            "as": "book",
+                        }
+                    },
+                    {"$unwind": "$book"},
+                    {
+                        "$lookup": {
+                            "from": "users",
+                            "localField": "user_id",
+                            "foreignField": "_id",
+                            "as": "user",
+                        }
+                    },
+                    {"$unwind": "$user"},
+                    {
+                        "$project": {
+                            "book": "$book",
+                            "book_item": None,
+                            "id": "$_id",
+                            "book_id": 1,
+                            "user": "$user",
+                            "status": 1,
+                            "date_of_return": 1,
+                            "date_of_issue": 1,
+                            "actual_date_of_return": 1,
+                            "fine": 1,
+                            "issued_by": 1,
+                            "date_of_reservation": 1,
+                        }
+                    },
+                ],
             }
         },
-        {"$unwind": "$book"},
-        {
-            "$lookup": {
-                "from": "users",
-                "localField": "user_id",
-                "foreignField": "_id",
-                "as": "user",
-            }
-        },
-        {"$unwind": "$user"},
-        {
-            "$lookup": {
-                "from": "book_items",
-                "localField": "book_item_id",
-                "foreignField": "_id",
-                "as": "book_item",
-            }
-        },
-        {"$unwind": "$book_item"},
         {
             "$project": {
-                "book": "$book",
-                "book_item": "$book_item",
-                "id": "$_id",
-                "book_id": 1,
-                "user": "$user",
-                "status": 1,
-                "date_of_return": 1,
-                "date_of_issue": 1,
-                "actual_date_of_return": 1,
-                "fine": 1,
-                "issued_by": 1,
-                "date_of_reservation": 1,
+                "transactions": {
+                    "$concatArrays": [
+                        "$book_transactions",
+                        "$in_queue_transactions",
+                    ]
+                }
             }
         },
+        {"$unwind": "$transactions"},
+        {"$replaceRoot": {"newRoot": "$transactions"}},
         {"$sort": {"_id": -1}},
     ]
     book_trans = list(BookTransactions.aggregate(pipeline))
@@ -504,7 +560,6 @@ class BookCrud(BaseCrud):
         }
 
     def get_subjects(self):
-        
         return Utils.find_one({"name": "subjects"})["value"]
 
 
