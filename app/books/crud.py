@@ -48,12 +48,26 @@ def add_book(book: dict):
     """
     Add a book
     """
+    print( book)
     if book["image"] == "":
         raise HTTPException(
             status_code=400, detail="Image is required for adding a book"
         )
     book["available_copies"] = book["no_of_copies"]
     book["virtual_copies"] = book["no_of_copies"]
+
+    if not Utils.find_one({"name": "subjects"}):
+        Utils.insert_one({"name": "subjects", "value": []})
+    if book["subject"] not in Utils.find_one({"name": "subjects"})["value"]:
+        Utils.update_one(
+            {
+                "name": "subjects",
+            },
+            {
+                "$push": {"value": book["subject"]},
+            },
+        )
+
     new_book = Books.insert_one(book)
     acc_no = 1000
     if not Utils.find_one({"name": "acc_no"}):
@@ -465,8 +479,6 @@ class BookCrud(BaseCrud):
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Book already in queue by user",
                 )
-                
-                
 
         days_of_return = libraryCrud.get_lib_config()["days_of_return"]
         book_trans = BookTransaction(
@@ -490,6 +502,10 @@ class BookCrud(BaseCrud):
         return {
             "message": "Book issued",
         }
+
+    def get_subjects(self):
+        
+        return Utils.find_one({"name": "subjects"})["value"]
 
 
 class BookQueueCrud(BaseCrud):

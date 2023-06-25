@@ -74,6 +74,12 @@ def immediate_issue(req_data: dict, user=Depends(get_current_user)):
     return book_crud.immediate_issue(req_data)
 
 
+@book_router.get("/subjects")
+@exception_handler("Error getting subjects")
+def get_subjects():
+    return book_crud.get_subjects()
+
+
 @book_router.delete("/{book_id}")
 @role_decorator(role=[UserRoles.ADMIN])
 def delete_book(book_id: str, user=Depends(get_current_user)):
@@ -124,12 +130,13 @@ def get_book(book_id: str):
 @book_router.post("/")
 @role_decorator(role=[UserRoles.ADMIN])
 def add_book(book: Book, user=Depends(get_current_user)):
-    try:
+    # try:
         return crud.add_book(book.dict())
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding book"
-        )
+    # except Exception as e:
+    #     print(e)
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST, detail="Error adding book"
+    #     )
 
 
 @book_router.post("/{book_id}/reserve")
