@@ -18,7 +18,6 @@ user_router = APIRouter()
 @user_router.get("/search")
 def search_user(adm_no: str = None):
     # try:
-    print(adm_no)
     users = userCrud.search(adm_no)
     return userResponsesEntity(users)
 
@@ -35,7 +34,7 @@ def search_user(adm_no: str = None):
 @user_router.get("/")
 @role_decorator([UserRoles.ADMIN])
 def get_users(user=Depends(get_current_user)):
-    return userListEntity(userCrud.get_all())
+    return userListEntity(userCrud.get_active())
 
 
 @user_router.get("/profile")
@@ -67,6 +66,20 @@ def get_user_transactions(user: dict = Depends(get_current_user)):
 #         detail="Error getting transactions",
 #         headers={"WWW-Authenticate": "Bearer"},
 #     )
+
+
+@user_router.delete("/{user_id}")
+def delete_user(user_id: str):
+    try:
+        userCrud.soft_delete(user_id)
+        return {"message": "User deleted"}
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error deleting user",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @user_router.get("/nonverified")
@@ -114,6 +127,7 @@ def create_user(userData: dict, user=Depends(get_current_user)):
                 "verified": True,
                 "created_at": datetime.datetime.utcnow(),
                 "updated_at": datetime.datetime.utcnow(),
+                "active": True,
             }
         )
         return {"message": "User created"}
@@ -125,15 +139,15 @@ def create_user(userData: dict, user=Depends(get_current_user)):
         )
 
 
-@user_router.delete("/{user_id}")
-@role_decorator([UserRoles.ADMIN])
-def delete_user(user_id: str, user=Depends(get_current_user)):
-    try:
-        userCrud.delete(user_id)
-        return {"message": "User deleted"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error deleting user",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+# @user_router.delete("/{user_id}")
+# @role_decorator([UserRoles.ADMIN])
+# def delete_user(user_id: str, user=Depends(get_current_user)):
+#     try:
+#         userCrud.delete(user_id)
+#         return {"message": "User deleted"}
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Error deleting user",
+#             headers={"WWW-Authenticate": "Bearer"},
+#         )

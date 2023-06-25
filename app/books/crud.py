@@ -137,8 +137,11 @@ def reserve_book(book_id: str, user: dict):
         #         detail="Book already returned",
         #     )
 
+    book_item = BookItems.find_one(
+        {"book_id": ObjectId(book_id), "status": BookStatus.AVAILABLE}
+    )
     book = get_book(book_id)
-    if book["virtual_copies"] == 0:
+    if book["virtual_copies"] == 0 and not book_item:
         book_queue = BookQueue.find_one({"book_id": ObjectId(book_id)})
         if not book_queue:
             book_queue = BookQueue.insert_one(
@@ -146,7 +149,7 @@ def reserve_book(book_id: str, user: dict):
             )
         else:
             if user["id"] in book_queue["queue"]:
-                return {"message": "Book already in queue", "data": book}
+                return "Book already in queue"
             BookQueue.update_one(
                 {"_id": ObjectId(book_queue["_id"])},
                 {"$push": {"queue": user["id"]}},
@@ -160,9 +163,6 @@ def reserve_book(book_id: str, user: dict):
         BookTransactions.insert_one(bookTransaction.dict())
         return "Book added to queue"
     else:
-        book_item = BookItems.find_one(
-            {"book_id": ObjectId(book_id), "status": BookStatus.AVAILABLE}
-        )
         BookItems.update_one(
             {"_id": ObjectId(book_item["_id"])},
             {"$set": {"status": BookStatus.RESERVED}},
@@ -181,14 +181,7 @@ def reserve_book(book_id: str, user: dict):
         BookTransactions.insert_one(bookTransaction.dict())
         book["virtual_copies"] = book["virtual_copies"] - 1
         book_item["status"] = BookStatus.RESERVED
-        return {
-            "message": "Book reserved",
-            # "data": {
-            #     "book": book,
-            #     "book_transaction": bookTransaction,
-            #     "book_item": book_item,
-            # }
-        }
+        return "Book reserved"
 
 
 def get_book_queue(book_id: str):
@@ -319,10 +312,7 @@ def return_book(book_trans_id: str):
                     "status": BookTransactionStatus.RESERVED,
                 },
             )
-            Books.update_one(
-                {"_id": ObjectId(book_item["book_id"])},
-                {"$inc": {"virtual_copies": -1}},
-            )
+
 
             book_queue["queue"].pop(0)
             bookQueueCrud.update({"_id": ObjectId(book_queue["_id"])}, book_queue)

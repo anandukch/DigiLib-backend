@@ -9,7 +9,7 @@ class UserCrud(BaseCrud):
         super().__init__(User)
 
     def get_non_verified(self):
-        return list(self.db.find({"verified": False}))
+        return list(self.db.find({"verified": False, "active": True}))
 
     def verify(self, user_id: str):
         return self.update({"_id": ObjectId(user_id)}, {"verified": True})
@@ -120,27 +120,21 @@ class UserCrud(BaseCrud):
         return list(BookTransactions.aggregate(pipeline))
 
     def search(self, adm_no: str = None):
-        # pipeline = [
-        #     {
-        #         "$search": {
-        #             "text": {
-        #                 "query": query,
-        #                 "path": ["name", "email"],
-        #             }
-        #         }
-        #     },
-        #     {"$project": {"name": 1, "email": 1}},
-        # ]
-        # return list(self.db.aggregate(pipeline))
-
         return list(
             self.db.find(
                 {
                     # "name": {"$regex": name, "$options": "i"},
                     "adm_no": {"$regex": adm_no, "$options": "i"},
+                    "active": True,
                 },
             )
         )
+
+    def soft_delete(self, user_id: str):
+        return self.update({"_id": ObjectId(user_id)}, {"active": False})
+
+    def get_active(self):
+        return list(self.db.find({"active": True}))
 
 
 userCrud = UserCrud()
