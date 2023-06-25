@@ -197,13 +197,15 @@ def issue_book(book_trans_id: str):
         return {"message": "Book not available"}
     # book_item = BookItems.find_one({"_id": ObjectId(book_transaction["book_item_id"])})
 
+    days_of_return = libraryCrud.get_lib_config()["days_of_return"]
     BookTransactions.update_one(
         {"_id": ObjectId(book_trans_id)},
         {
             "$set": {
                 "status": BookTransactionStatus.ISSUED,
                 "date_of_issue": datetime.utcnow(),
-                "date_of_return": datetime.utcnow() + timedelta(days=15),
+                "date_of_return": datetime.utcnow()
+                + timedelta(days=int(days_of_return)),
             }
         },
     )
@@ -375,7 +377,7 @@ def get_book_item(book_item_id: str):
 
 
 def immediate_issue(book_id: dict, user_id: dict):
-    book = get_book(ObjectId(book_id))
+    book = get_book(book_id)
     if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Book not found"
@@ -414,20 +416,6 @@ class BookCrud(BaseCrud):
         super().__init__(Books)
 
     def search(self, query: str):
-        # pipeline = [
-        #     {
-        #         "$search": {
-        #             "autocomplete": {
-        #                 "query": query,
-        #                 "path": "title",
-        #                 "fuzzy": {"maxEdits": 2},
-        #             }
-        #         }
-        #     },
-        #     {"$limit": 5},
-        # ]
-        # books = Books.aggregate(pipeline)
-
         books = self.db.find(
             {
                 "$or": [
@@ -466,6 +454,12 @@ class BookItemsCrud(BaseCrud):
 
     def get_by_status(self, book_id: str, status: str):
         return self.db.find_one({"book_id": ObjectId(book_id), "status": status})
+
+    def get_by_book_id(self, book_id: str):
+        return self.db.find({"book_id": ObjectId(book_id)})
+
+    def delete_by_book_id(self, book_id: str):
+        self.db.delete_many({"book_id": ObjectId(book_id)})
 
 
 bookItemsCrud = BookItemsCrud()

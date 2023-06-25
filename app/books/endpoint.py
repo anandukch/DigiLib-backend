@@ -15,6 +15,7 @@ from app.utils import role_decorator
 book_router = APIRouter()
 
 book_crud = crud.BookCrud()
+book_items_crud = crud.BookItemsCrud()
 
 
 @book_router.get("/authors")
@@ -46,21 +47,36 @@ def get_all():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error"
         )
+
+
 @book_router.get("/search")
 def serach_book(title: str = None):
     try:
         return bookListResponseEntity(book_crud.search(title))
     except Exception as e:
-        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error searching book"
         )
 
-@book_router.post("/{book_trans_id}/return")
+
+@book_router.delete("/{book_id}")
 @role_decorator(role=[UserRoles.ADMIN])
+def delete_book(book_id: str, user=Depends(get_current_user)):
+    try:
+        book_items_crud.delete_by_book_id(book_id)
+        book_crud.delete(book_id)
+        return {"message": "Book deleted successfully"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error deleting book"
+        )
+
+
+@book_router.post("/{book_trans_id}/return")
+@role_decorator(role=[UserRoles.ADMIN, UserRoles.ISSUER])
 def return_book(book_trans_id: str, user=Depends(get_current_user)):
     try:
-        print("return book")
         return crud.return_book(book_trans_id)
     except Exception as e:
         raise HTTPException(
@@ -131,6 +147,3 @@ def get_book_transactions(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error getting book transactions",
         )
-
-
-
