@@ -141,15 +141,18 @@ def reserve_book(book_id: str, user: dict):
         {"book_id": ObjectId(book_id), "status": BookStatus.AVAILABLE}
     )
     book = get_book(book_id)
-    if book["virtual_copies"] == 0 and not book_item:
+    if book["virtual_copies"] == 0:
         book_queue = BookQueue.find_one({"book_id": ObjectId(book_id)})
         if not book_queue:
             book_queue = BookQueue.insert_one(
-                {"book_id": ObjectId(book_id), "queue": []}
+                {"book_id": ObjectId(book_id), "queue": [user["id"]]}
             )
         else:
             if user["id"] in book_queue["queue"]:
-                return "Book already in queue"
+                raise HTTPException(
+                    status_code=400,
+                    detail="Book already in queue",
+                )
             BookQueue.update_one(
                 {"_id": ObjectId(book_queue["_id"])},
                 {"$push": {"queue": user["id"]}},
@@ -312,7 +315,6 @@ def return_book(book_trans_id: str):
                     "status": BookTransactionStatus.RESERVED,
                 },
             )
-
 
             book_queue["queue"].pop(0)
             bookQueueCrud.update({"_id": ObjectId(book_queue["_id"])}, book_queue)
