@@ -58,11 +58,13 @@ def serach_book(title: str = None):
             book_item = book_items_crud.get_by_status(book.get("id"), "available")
             if book_item:
                 book["available"] = True
+                book["acc_no"] = book_item.get("acc_no")
             else:
                 book["available"] = False
-            book["acc_no"] = book_item.get("acc_no")
+            
         return books
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error searching book"
         )
