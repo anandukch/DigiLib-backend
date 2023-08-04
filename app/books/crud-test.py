@@ -62,3 +62,12 @@
 #     def delete_book_queue(self, book_queue_id: str):
 #         return BookQueue.delete_one({"_id": ObjectId(book_queue_id)})
 
+from app.common import BaseCrud
+from app.db import User
+
+
+class BookCrud(BaseCrud):
+    def __init__(self):
+        super().__init__(User)
+
+

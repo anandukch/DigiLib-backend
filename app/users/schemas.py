@@ -4,7 +4,6 @@ from pydantic import BaseModel, EmailStr, constr
 
 from app.common import UserRoleEnum, UserRoles
 
-
 class UserBaseSchema(BaseModel):
     name: str
     email: str
