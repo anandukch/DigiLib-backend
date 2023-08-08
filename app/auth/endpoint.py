@@ -8,13 +8,12 @@ from app.auth.schemas import (
 )
 from app.utils import hash_password, role_decorator, verify_password
 from app.db import User
-from app.exception_handler import exception_handler
-from app.serializers.users import userResponseEntity
+# from app.exception_handler import exception_handler
+# from app.serializers.users import userResponseEntity
 from app.common import UserRoles
-from app.users.schemas import UserResponse
+# from app.users.schemas import UserResponse
 
 auth_router = APIRouter()
-
 
 @auth_router.post("/check")
 @role_decorator(role=[UserRoles.ADMIN, UserRoles.STUDENT])
@@ -70,7 +69,7 @@ def register(payload: CreateUserSchema):
         except Exception as e:
             print(e)
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors()
+                status_code=status.HTTP_400_BAD_REQUEST, detail=e
             )
     payload.department = "cse"
     payload.reg_no = payload.reg_no.lower()

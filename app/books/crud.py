@@ -252,7 +252,7 @@ def get_book_transactions(bookId: str, type: str):
     if type == "issued":
         params["status"] = BookStatus.ISSUED
     elif type == "returned":
-        params["status"] = BookStatus.RETURNED
+        params["status"] = BookTransactionStatus.RETURNED
     return bookTransListEntity(list(BookTransactions.find(params)))
 
 

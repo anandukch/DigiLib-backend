@@ -1,5 +1,3 @@
-from typing import Optional
-from click import Option
 from pydantic import BaseModel, EmailStr, constr
 
 from app.users.schemas import UserBaseSchema
