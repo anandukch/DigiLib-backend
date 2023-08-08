@@ -82,7 +82,7 @@ class BookTransaction(BaseModel):
     date_of_issue: datetime | None = None
     date_of_return: datetime | None = None
     actual_date_of_return: datetime | None = None
-    fine: int | None = None
+    fine: int | None = 0
     issued_by: ObjectId | None = None
 
     class Config:

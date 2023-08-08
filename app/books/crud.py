@@ -7,6 +7,7 @@ from click import File
 from fastapi import HTTPException, UploadFile, status
 from app.books.schemas import Author, AuthorDB, Book, BookDB, BookItem, BookTransaction
 from app.common import BaseCrud, BookStatus, BookTransactionStatus
+from app.cron_tasks import calculate_fine_dues
 from app.db import Authors, BookItems, BookQueue, BookTransactions, Books, Utils
 from app.library.crud import LibraryCrud
 from app.serializers.book_trans import bookTransListEntity
@@ -162,6 +163,7 @@ def reserve_book(book_id: str, user: dict):
             user_id=ObjectId(user["id"]),
             status=BookTransactionStatus.IN_QUEUE,
             date_of_reservation=datetime.utcnow(),
+            fine=0,
         )
         BookTransactions.insert_one(bookTransaction.dict())
         return "Book added to queue"
@@ -367,7 +369,7 @@ def get_all_book_transactions():
                             "date_of_return": 1,
                             "date_of_issue": 1,
                             "actual_date_of_return": 1,
-                            "fine": 1,
+                            # "fine": 1,
                             "issued_by": 1,
                             "date_of_reservation": 1,
                         }
@@ -404,7 +406,7 @@ def get_all_book_transactions():
                             "date_of_return": 1,
                             "date_of_issue": 1,
                             "actual_date_of_return": 1,
-                            "fine": 1,
+                            # "fine": 1,
                             "issued_by": 1,
                             "date_of_reservation": 1,
                         }
@@ -427,6 +429,31 @@ def get_all_book_transactions():
         {"$sort": {"_id": -1}},
     ]
     book_trans = list(BookTransactions.aggregate(pipeline))
+    fine_rate = libraryCrud.get_lib_config()["fine_rate"]
+    for i in range(len(book_trans)):
+        book_tran = book_trans[i]
+        delay = ""
+        fine = 0
+        if book_tran["date_of_return"] is not None:
+            if book_tran["actual_date_of_return"] is not None:
+                delay = book_tran["actual_date_of_return"] - book_tran["date_of_return"]
+                if delay.days > 0:
+                    fine = delay.days * fine_rate
+            else:
+                delay = datetime.utcnow() - book_tran["date_of_return"]
+
+                if delay.days > 0:
+                    fine = delay.days * fine_rate
+        book_trans[i]["fine"] = fine
+        # bookTransactionsCrud.update(
+        #     {
+        #         "_id": ObjectId(book_tran["id"]),
+        #     },
+        #     {
+        #         "fine": fine,
+        #     },
+        # )
+
     return book_trans
 
 
