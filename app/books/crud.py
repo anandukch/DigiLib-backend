@@ -49,7 +49,6 @@ def add_book(book: dict):
     """
     Add a book
     """
-    print(book)
     if book["image"] == "":
         raise HTTPException(
             status_code=400, detail="Image is required for adding a book"
@@ -502,7 +501,7 @@ def get_book_item(book_item_id: str):
 #         "message": "Book issued",
 #     }
 
-
+from app.models.index import get_popular_books
 class BookCrud(BaseCrud):
     def __init__(self):
         super().__init__(Books)
@@ -580,6 +579,49 @@ class BookCrud(BaseCrud):
 
     def get_subjects(self):
         return Utils.find_one({"name": "subjects"})["value"]
+    
+
+
+
+class BookRecommendationCrud:
+    def __init__(self):
+        pass
+
+    def get_popular_books(self):
+        popular_df = get_popular_books()
+        book_name = (list(popular_df["Book-Title"].values),)
+        author = (list(popular_df["Book-Author"].values),)
+        image = (list(popular_df["Image-URL-M"].values),)
+        votes = (list(popular_df["num_ratings"].values),)
+        rating = list(popular_df["avg_rating"].values)
+
+    # rend as a json resposne to the client but format it in an array of objects
+        # print(book_name[0])
+        book_obj = []
+        for i in range(len(book_name[0])):
+            book_obj.append(
+                {
+                    "book_name": book_name[0][i],
+                    "author": author[0][i],
+                    "image": image[0][i],
+                }
+            )
+        # print(book_obj)
+        return book_obj
+    
+
+    def get_books(self,title:str):
+        from app.models.index import get_book_by_title
+        book = get_book_by_title(title)
+        return {
+            "book_name": book["Book-Title"].values[0],
+            "author": book["Book-Author"].values[0],
+            "image": book["Image-URL-M"].values[0],
+        }
+    
+
+
+
 
 
 class BookQueueCrud(BaseCrud):

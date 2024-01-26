@@ -17,6 +17,26 @@ book_router = APIRouter()
 
 book_crud = crud.BookCrud()
 book_items_crud = crud.BookItemsCrud()
+book_recommendation_crud = crud.BookRecommendationCrud()
+
+
+
+@book_router.get("/recommendations")
+def get_recommendations(title:str=None):
+    try:
+        if title:
+            return book_recommendation_crud.get_books(title)
+        return book_recommendation_crud.get_popular_books()
+    except Exception as e:
+        print(e)
+        if type(e) == HTTPException:
+            raise e
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error getting book recommendations",
+        )
+        
+
 
 
 @book_router.get("/authors")
@@ -171,3 +191,9 @@ def get_book_transactions(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error getting book transactions",
         )
+
+
+
+
+
+
