@@ -22,6 +22,7 @@ pyright = "^1.1.311"
 bcrypt = "^4.0.1"
 pickle-mixin = "^1.0.2"
 pandas = "^2.2.0"
+scikit-learn = "^1.4.1.post1"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^23.3.0", allow-prereleases = true}

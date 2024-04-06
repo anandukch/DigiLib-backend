@@ -36,7 +36,18 @@ def get_recommendations(title:str=None):
             detail="Error getting book recommendations",
         )
         
-
+@book_router.post("/v2/recommendations")
+def get_v2_recommendations(data:dict):
+    try:
+        return book_recommendation_crud.recommend_books(data.get("values"))
+    except Exception as e:
+        print(e)
+        if type(e) == HTTPException:
+            raise e
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error getting book recommendations",
+        )
 
 
 @book_router.get("/authors")

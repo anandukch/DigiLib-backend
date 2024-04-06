@@ -21,3 +21,18 @@ def get_book_by_title(title: str):
     except Exception as e:
         raise e
 
+
+def recommend_books(values: list):
+    print(values)
+    try:
+        with open (os.getcwd() + '/app/models/knn_model.pkl'
+                   , 'rb') as f:
+            model = pickle.load(f)
+            book_class = model.predict([values])
+            books = pickle.load(open(os.getcwd() + '/app/models/book.pkl', 'rb'))
+            # print(books[books['Class'] == book_class[0]])
+            return books[books['Class'] == book_class[0]]
+            
+    except Exception as e:
+        raise e
+

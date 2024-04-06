@@ -620,6 +620,28 @@ class BookRecommendationCrud:
         }
     
 
+    def recommend_books(self,values: list):
+        from app.models.index import recommend_books
+        books =  recommend_books(values)
+        book_name = (list(books["Book"].values),)
+        # author = (list(books["Book-Author"].values),)
+        classes     = (list(books["Class"].values),)
+        image = (list(books["Book Image"].values),)
+
+        # rend as a json resposne to the client but format it in an array of objects
+        book_obj = []
+        for i in range(len(book_name[0])):
+            book_obj.append(
+                {
+                    "book_name": book_name[0][i],
+                    "class" : classes[0][i],
+                    "image": image[0][i],
+                }
+            )
+
+        return book_obj
+    
+
 
 
 
