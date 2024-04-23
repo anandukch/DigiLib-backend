@@ -48,8 +48,8 @@ def recommend_books(values: list):
             true_results = books[books["CLASS"] == book_class[0]]
 
             # Take 5 random books from extra books
-            if extra_books:
-                extra_books = pd.concat(extra_books)
+            # if extra_books:
+            #     extra_books = pd.concat(extra_books)
 
             # # Take 5 random books from true results
             # true_results = true_results[:5]
@@ -58,6 +58,7 @@ def recommend_books(values: list):
             # combined_books = true_results.append(extra_books, ignore_index=True)
 
             # print(combined_books)
+            # print(extra_books)
             return true_results,extra_books
 
     except Exception as e:

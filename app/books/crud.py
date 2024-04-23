@@ -502,6 +502,8 @@ def get_book_item(book_item_id: str):
 #     }
 
 from app.models.index import get_popular_books
+
+
 class BookCrud(BaseCrud):
     def __init__(self):
         super().__init__(Books)
@@ -579,8 +581,6 @@ class BookCrud(BaseCrud):
 
     def get_subjects(self):
         return Utils.find_one({"name": "subjects"})["value"]
-    
-
 
 
 class BookRecommendationCrud:
@@ -595,7 +595,7 @@ class BookRecommendationCrud:
         votes = (list(popular_df["num_ratings"].values),)
         rating = list(popular_df["avg_rating"].values)
 
-    # rend as a json resposne to the client but format it in an array of objects
+        # rend as a json resposne to the client but format it in an array of objects
         # print(book_name[0])
         book_obj = []
         for i in range(len(book_name[0])):
@@ -608,29 +608,32 @@ class BookRecommendationCrud:
             )
         # print(book_obj)
         return book_obj
-    
 
-    def get_books(self,title:str):
+    def get_books(self, title: str):
         from app.models.index import get_book_by_title
+
         book = get_book_by_title(title)
         return {
             "book_name": book["Book-Title"].values[0],
             "author": book["Book-Author"].values[0],
             "image": book["Image-URL-M"].values[0],
         }
-    
 
-    def recommend_books(self,values: list):
+    def recommend_books(self, values: list):
         try:
             from app.models.index import recommend_books
-            books,extra_books =  recommend_books(values)
+
+            books, extra_books = recommend_books(values)
+            
             # print(books)
+            # print(list(books["BOOK"].values),)
+
             book_name = (list(books["BOOK"].values),)
             # author = (list(books["Book-Author"].values),)
-            classes     = (list(books["CLASS"].values),)
+            classes = (list(books["CLASS"].values),)
             image = (list(books["img"].values),)
 
-            
+            # print(book_name[0][:10])
 
             # rend as a json resposne to the client but format it in an array of objects
             book_obj = []
@@ -638,35 +641,40 @@ class BookRecommendationCrud:
                 book_obj.append(
                     {
                         "book_name": book_name[0][i],
-                        "class" : classes[0][i],
+                        "class": classes[0][i],
                         "image": image[0][i],
                     }
                 )
 
-            extra_book_obj = []
+            # print(book_obj)
 
-            if extra_books:
-                extra_book_name = (list(extra_books["BOOK"].values),)
-                # extra_author = (list(extra_books["Book-Author"].values),)
-                extra_classes     = (list(extra_books["CLASS"].values),)
-                extra_image = (list(extra_books["img"].values),)
-                for i in range(len(extra_book_name[0])):
-                    extra_book_obj.append(
-                        {
-                            "book_name": extra_book_name[0][i],
-                            "class" : extra_classes[0][i],
-                            "image": extra_image[0][i],
-                        }
-                    )
+            extra_book_obj = []
+            print(extra_books)
+            
+            if len(extra_books) > 0:
+                extra_books = extra_books[0]
+                if not extra_books.empty:
+
+                    extra_book_name = (list(extra_books["BOOK"].values),)
+                    print(extra_book_name)
+                    #     # extra_author = (list(extra_books["Book-Author"].values),)
+                    extra_classes = (list(extra_books["CLASS"].values),)
+                    extra_image = (list(extra_books["img"].values),)
+                    for i in range(len(extra_books)):
+                        # print(extra_book_name[0][i])
+                        extra_book_obj.append(
+                            {
+                                "book_name": extra_book_name[0][i],
+                                "class": extra_classes[0][i],
+                                "image": extra_image[0][i],
+                            }
+                        )
+            # print(extra_book_obj)
             new_books = book_obj + extra_book_obj
             return new_books
         except Exception as e:
             # print(e)
             raise e
-    
-
-
-
 
 
 class BookQueueCrud(BaseCrud):
