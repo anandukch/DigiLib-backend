@@ -29,8 +29,7 @@ def recommend_books(values: list):
         with open(os.getcwd() + "/app/models/knn_model2.pkl", "rb") as f:
             model = pickle.load(f)
             # check if the all the values are 0
-            if all(v == 0 for v in values):
-                return None, None
+            
             book_class = model.predict([values])
             books = pickle.load(open(os.getcwd() + "/app/models/book.pkl", "rb"))
             print(book_class[0])
@@ -41,7 +40,7 @@ def recommend_books(values: list):
                 extra_books.append(books[books["CLASS"] == "Poetry"].sample(5))
             if book_class[0] != "History" and values[3] == 1:
                 extra_books.append(books[books["CLASS"] == "History"].sample(5))
-            if book_class[0] != "Comic" and values[6] == 1:
+            if book_class[0] != "Comic" and (values[6] == 1 or values[8]==1):
                 extra_books.append(books[books["CLASS"] == "Comic"].sample(5))
             if book_class[0] != "Biography" and values[0] == 1:
                 extra_books.append(books[books["CLASS"] == "Biography"].sample(5))
@@ -60,8 +59,8 @@ def recommend_books(values: list):
             # combined_books = true_results.append(extra_books, ignore_index=True)
 
             # print(combined_books)
-            # print(extra_books)
-            return true_results,extra_books
+            
+            return true_results[:10],extra_books
 
     except Exception as e:
         raise e

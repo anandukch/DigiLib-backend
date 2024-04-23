@@ -622,12 +622,14 @@ class BookRecommendationCrud:
     def recommend_books(self, values: list):
         try:
             from app.models.index import recommend_books
-
-            books, extra_books = recommend_books(values)
-            if not books:
+            if all(v == 0 for v in values):
                 return []
-            
+            books, extra_books = recommend_books(values)
             # print(books)
+
+            # if not books:
+            #     return []
+            
             # print(list(books["BOOK"].values),)
 
             book_name = (list(books["BOOK"].values),)
@@ -639,7 +641,7 @@ class BookRecommendationCrud:
 
             # rend as a json resposne to the client but format it in an array of objects
             book_obj = []
-            for i in range(len(book_name[0][:10])):
+            for i in range(len(book_name[0])):
                 book_obj.append(
                     {
                         "book_name": book_name[0][i],
@@ -651,18 +653,21 @@ class BookRecommendationCrud:
             # print(book_obj)
 
             extra_book_obj = []
-            print(extra_books)
+            # print(extra_books)
             
             if len(extra_books) > 0:
-                extra_books = extra_books[0]
-                if not extra_books.empty:
+                # extra_books = extra_books[0]
+                    
+                # if not extra_books.empty:
+                for extra_book in extra_books:
+                    print(extra_book)
+                    extra_book_name = (list(extra_book["BOOK"].values),)
+                    # print(extra_book_name)
 
-                    extra_book_name = (list(extra_books["BOOK"].values),)
-                    print(extra_book_name)
                     #     # extra_author = (list(extra_books["Book-Author"].values),)
-                    extra_classes = (list(extra_books["CLASS"].values),)
-                    extra_image = (list(extra_books["img"].values),)
-                    for i in range(len(extra_books)):
+                    extra_classes = (list(extra_book["CLASS"].values),)
+                    extra_image = (list(extra_book["img"].values),)
+                    for i in range(len(extra_book)):
                         # print(extra_book_name[0][i])
                         extra_book_obj.append(
                             {
