@@ -24,11 +24,13 @@ def get_book_by_title(title: str):
 
 import pandas as pd
 def recommend_books(values: list):
-    print(values)
+    
     try:
         with open(os.getcwd() + "/app/models/knn_model2.pkl", "rb") as f:
             model = pickle.load(f)
-            print(values)
+            # check if the all the values are 0
+            if all(v == 0 for v in values):
+                return None, None
             book_class = model.predict([values])
             books = pickle.load(open(os.getcwd() + "/app/models/book.pkl", "rb"))
             print(book_class[0])

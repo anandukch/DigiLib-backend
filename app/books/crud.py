@@ -624,6 +624,8 @@ class BookRecommendationCrud:
             from app.models.index import recommend_books
 
             books, extra_books = recommend_books(values)
+            if not books:
+                return []
             
             # print(books)
             # print(list(books["BOOK"].values),)
