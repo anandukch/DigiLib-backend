@@ -1,6 +1,6 @@
 # Digilib - Library Management System
 
-Digilib is a library management system built as a mini-project for our college. It provides a user-friendly interface for students, faculty, and library staff to manage library resources efficiently. This repository contains the backend code for Digilib, built using FastAPI, MongoDB, and integrates with Cloudinary for storing book images.
+Digilib is a library management system built for college libraries. It provides a user-friendly interface for students, faculty, and library staff to manage library resources efficiently. This repository contains the backend code for Digilib, built using FastAPI, MongoDB, and integrates with Cloudinary for storing book images.
 
 ## Features
 
